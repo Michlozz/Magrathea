@@ -1,0 +1,11 @@
+PRERUN:
+
+module load gsl
+
+COMPLIE:
+
+make
+
+RUN:
+
+./planet

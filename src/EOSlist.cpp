@@ -107,6 +107,10 @@ EOS *Fe_15Si = new EOS("Fe-15Si (Wicks)", Fe_15Si_array, sizeof(Fe_15Si_array)/2
 EOS *Fe_Seager = new EOS("Fe (Seager)", "./tabulated/iron.txt");
 
 // -----------------------------------
+// Iron, Seager Fake
+	EOS *Fe_Fake = new EOS("Fe Fake", "./tabulated/Test_Iron.txt");
+	
+// -----------------------------------
 // Iron Dummy, Used to fill in phase space that no EOS provided.
 
 EOS *Fe_Dummy = new EOS("Fe Dummy", Fe_hcp3_array, sizeof(Fe_hcp3_array)/2/sizeof(Fe_hcp3_array[0][0]));
@@ -385,6 +389,9 @@ EOS *IceX_HS = new EOS("Ice X (Hermann)", IceX_HS_array, sizeof(IceX_HS_array)/2
 // -----------------------------------
 // Ice, Seager et al. 2007 ApJ 669:1279, tabulate EOS
 EOS *Ice_Seager = new EOS("Ice (Seager)", "./tabulated/water.txt");
+
+// Si, Temporal for test, tabulate EOS
+EOS *Si_QEOS = new EOS("Si (QEOS)", "./tabulated/QEOS.txt");
 
 // -----------------------------------
 // Ice Dummy,  Used to fill in phase space that no EOS provided.

@@ -1352,7 +1352,6 @@ void hydro::print(string outfile, bool debug)
   int j=0;
   EOS *newPhase = Phaselist[0], *Phase=NULL;
 
-  fout<<"Index\t Radius (earth)"<<"\t "<<"P (GPa)"<<"\t "<<"M (earth)"<<"\t "<<"Density (g cm^-3)"<<"\t "<<"T (K)"<<"\t "<<"Phase"<<endl;
   
   for(int i=0;i<int(rb.size());i++)
   {

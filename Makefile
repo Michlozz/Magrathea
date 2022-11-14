@@ -1,8 +1,8 @@
 #DEBUG=-g
 CC=g++ #-fopenmp
 
-CFLAGS= -std=c++0x -O3 -Wall #-I ~/Downloads/gsl/include
-LDFLAGS= -L/usr/local/lib -lgsl -lgslcblas -lm #-L ~/Downloads/gsl/lib
+CFLAGS= -std=c++0x -O3 -Wall -I/powerapps/share/gsl/include
+LDFLAGS= -L/powerapps/share/gsl/lib -lgsl -lgslcblas -lm
 
 SRCDIR = src
 LIBDIR = src
