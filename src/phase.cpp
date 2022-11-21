@@ -1,13 +1,6 @@
 #include "phase.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <iostream>
-#include <new>
-#include <fstream>
-
 //Conditionals for Phase Diagrams in each layer begin LINE 250
-void QEOS_build(double, int);
+
 PhaseDgm::PhaseDgm(string Comp_name, EOS* (*f)(double, double), int k, EOS** phase_name, double *start_pressure)
 {
   Comp_type = Comp_name;
@@ -351,8 +344,8 @@ EOS* find_Fe_phase(double P, double T)
   if( T > 12.8*P + 2424 && T > 13.7*P + 2328)   // melting curve from Dorogokupets et al. 2017, Scientific Reports. fcc and hcp Fe melting curve.
     return Fe_liquid;
   else
-	return Fe_hcp;             // use hcp Iron for all regions.
-  // 	return Fe_Fake;
+    return Fe_hcp;             // use hcp Iron for all regions.
+
   //Alternative Core Phase Diagram with fcc and bcc iron
   //if(T>575+18.7*P+0.213*pow(P,2)-0.000817*pow(P,3) && P<98.5) // Anzellini et al. 2013
   //{
@@ -386,25 +379,15 @@ EOS* find_Si_phase(double P, double T)
     return NULL;
   }
 
-  P /= 1E10;			// convert microbar to GPa
-  // Default Mantle
-  if(P > 112.5 + 7E-3*T)	// Phase transfer curve from Ono & Oganov 2005, Earth Planet. Sci. Lett. 236, 914
-    return Si_PPv_Sakai;
-  else if (T > 1830*pow(1+P/4.6, 0.33)) // Melting curve from Belonoshko et al. 2005 Eq. 2
-    return Si_Liquid_Wolf;
-  else
-	  
-	  cout << "QEOS_build before" ;
-	 getchar();
-	  QEOS_build(T, 7497); 
-	  
-	  cout << "QEOS_build after" ;
-	  getchar();	  
-	  
-	  return Si_QEOS;
-  
-//    return Si_Seager;	  
- //   return Si_Pv; @@@@@
+ // P /= 1E10;			// convert microbar to GPa
+ // // Default Mantle
+ // if(P > 112.5 + 7E-3*T)	// Phase transfer curve from Ono & Oganov 2005, Earth Planet. Sci. Lett. 236, 914
+ //   return Si_PPv_Sakai;
+ // else if (T > 1830*pow(1+P/4.6, 0.33)) // Melting curve from Belonoshko et al. 2005 Eq. 2
+ //   return Si_Liquid_Wolf;
+ // else
+
+   // return Si_Pv;
 
   // Detailed Upper Mantle
   //if(P > 112.5 + 7E-3*T)      // Phase transfer curve from Ono & Oganov 2005, Earth Planet. Sci. Lett. 236, 914
@@ -426,7 +409,8 @@ EOS* find_Si_phase(double P, double T)
   //else if(P > 23.83)
   //  return Si_BM2fit;
   //else
-  //  return Si_PREM;
+  // return Si_PREM;
+	return Si_QEOS;
 }
 
 // ---------------------------------
@@ -529,111 +513,4 @@ EOS* find_phase(double m, vector<PhaseDgm> &Comp, vector<double> M, double P, do
   }
   // if nothing matched, return the outermost existing layer
   return Comp.back().find_phase(P, T);
-}
-
-
-void QEOS_build(double T, const int size) {
-	
-
-
-	double P_line = 0.0, T_line = 0.0, rho_line = 0.0, tmp = 0.0, Tlow = 0.0, Thigh = 0.0, T0 = 0.0;
-	double P_table[size], T_table[size], rho_table[size];
-	double rhohigh[size], rholow[size], Phigh[size], Plow[size], rhoiterp[size], Piterp[size]; //Note that not entire array is used. 
-	
-
-	FILE* fp = fopen("tabulated/QEOS_full.txt", "r");
-	int j, i, blocksize, jbrake;
-
-	if (!fp) {
-		perror("fopen");
-		return;
-	}
-
-	char line[512];
-
-	if (!fgets(line, sizeof line, fp) || !strstr(line, "T rho P")) {
-		fprintf(stderr, "Invalid or missing header.\n");
-		return;
-	}
-	j = 0;
-
-
-	while (fgets(line, sizeof line, fp)) {
-		if (3 == sscanf(line, "%lf%lf%lf", &T_line, &rho_line, &P_line)) {
-			T_table[j] = T_line;
-			rho_table[j] = rho_line;
-			P_table[j] = P_line;
-			j = j + 1;
-
-		}
-	}
-
-
-
-	fclose(fp);
-	T0 = T_table[0];
-
-	for (j = 0; j < size; j++) {
-		tmp = T_table[j];
-		if (tmp > T0) {
-			break;
-		}
-
-	}	// j breaks so [0--j] is one block size
-
-	blocksize = j;
-
-
-	for (j = 0; j < size; j++) {
-		tmp = T_table[j];
-		if (tmp > T) {
-			break;
-		}
-
-	} //Find T in table that is larger than given T
-
-	Tlow = T_table[j - 1];
-	Thigh = T_table[j];
-	jbrake = j; // a place there two blocks meet
-
-
-
-	i = 0;
-	for (j = jbrake; j <= blocksize + jbrake - 1; j++) {
-		Phigh[i] = P_table[j];
-		rhohigh[i] = rho_table[j];
-		i++;
-
-	}
-
-	i = 0;
-	for (j = jbrake - blocksize ; j <= jbrake; j++) {
-		Plow[i] = P_table[j];
-		rholow[i] = rho_table[j];
-		i++;
-
-	}
-	for (j = 0; j < blocksize ; j++) { //intepulation between two blocks
-		Piterp[j] = Plow[j] + (Phigh[j] - Plow[j])  / (Thigh - Tlow) * (T - Tlow); //Not useful in my case
-		rhoiterp[j] = rholow[j] + (rhohigh[j] - rholow[j]) / (Thigh - Tlow) * (T - Tlow); 
-
-	}
-
-
-	
-	ofstream myfile; //save as new EOS table:
-
-	myfile.open("tabulated/QEOS.txt");
-	
-	
-	myfile << "rho (g/cm^-3)	P (GPa); T="<<T<<"\n";
-	for (j = 0; j < blocksize; j++) {
-    myfile << rhoiterp[j] << " " << Piterp[j];
-	if(j < blocksize - 1) myfile << "\n";
-		
-	}
-
-	myfile.close();
-
-	 
 }

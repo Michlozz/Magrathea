@@ -37,14 +37,14 @@ int main()
   if (input_mode == 0)
   {
     vector<PhaseDgm> Comp = {Fe, Si, water, atm};
-    vector<double> Tgap = {0, 200, 50, 0};
+    vector<double> Tgap = {0, 200, 0, 300};
     // The temperature of the outer boundary of the inner component minus the inner boundary of the outer component.  A positive number indicates temperature increases inward.  0 indicates the temperature is continuous at the boundary of components.  The last number is the planetary surface temperature.
-    vector<double> Mcomp =  {1.0,1.5,0.0,0.0}; // Mass in Earth Masses of Core, Mantle, Hydrosphere, Atmosphere
+    vector<double> Mcomp =  {1.0,0.5,0.1,0.00001}; // Mass in Earth Masses of Core, Mantle, Hydrosphere, Atmosphere
     planet=fitting_method(Comp, Mcomp, Tgap, ave_rho, P_surface, false);
     cout<<count_shoot<<' '<<count_step<<endl;
     if (!planet)
     {
-      for (uint i=0; i < Mcomp.size(); i++)
+      for (unsigned int i=0; i < Mcomp.size(); i++)
 	cout<<Mcomp[i]<<", ";
       cout<<"\t No solution found."<<endl;
     }

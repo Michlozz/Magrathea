@@ -153,7 +153,7 @@ EOS::EOS(string phaseinput, double params[][2], int length):phasetype(phaseinput
   }
 }
 
-EOS::EOS(string phaseinput, string filename):phasetype(phaseinput),eqntype(5), V0(numeric_limits<double>::quiet_NaN()), K0(numeric_limits<double>::quiet_NaN()), K0p(numeric_limits<double>::quiet_NaN()), K0pp(numeric_limits<double>::quiet_NaN()), mmol(numeric_limits<double>::quiet_NaN()), P0(0), Theta0(numeric_limits<double>::quiet_NaN()), gamma0(numeric_limits<double>::quiet_NaN()), beta(numeric_limits<double>::quiet_NaN()), gammainf(numeric_limits<double>::quiet_NaN()), gamma0p(numeric_limits<double>::quiet_NaN()), e0(numeric_limits<double>::quiet_NaN()), g(numeric_limits<double>::quiet_NaN()), T0(300), alpha0(numeric_limits<double>::quiet_NaN()), alpha1(0), xi(0), cp_a(numeric_limits<double>::quiet_NaN()), cp_b(0), cp_c(0), at1(numeric_limits<double>::quiet_NaN()), at2(numeric_limits<double>::quiet_NaN()), at3(numeric_limits<double>::quiet_NaN()), at4(numeric_limits<double>::quiet_NaN()), ap1(numeric_limits<double>::quiet_NaN()), ap2(numeric_limits<double>::quiet_NaN()), ap3(numeric_limits<double>::quiet_NaN()), ap4(numeric_limits<double>::quiet_NaN()), n(-1), Z(-1), Debye_approx(false), thermal_type(0), bn(0)
+EOS::EOS(string phaseinput, string filename):phasetype(phaseinput),eqntype(7), V0(numeric_limits<double>::quiet_NaN()), K0(numeric_limits<double>::quiet_NaN()), K0p(numeric_limits<double>::quiet_NaN()), K0pp(numeric_limits<double>::quiet_NaN()), mmol(numeric_limits<double>::quiet_NaN()), P0(0), Theta0(numeric_limits<double>::quiet_NaN()), gamma0(numeric_limits<double>::quiet_NaN()), beta(numeric_limits<double>::quiet_NaN()), gammainf(numeric_limits<double>::quiet_NaN()), gamma0p(numeric_limits<double>::quiet_NaN()), e0(numeric_limits<double>::quiet_NaN()), g(numeric_limits<double>::quiet_NaN()), T0(300), alpha0(numeric_limits<double>::quiet_NaN()), alpha1(0), xi(0), cp_a(numeric_limits<double>::quiet_NaN()), cp_b(0), cp_c(0), at1(numeric_limits<double>::quiet_NaN()), at2(numeric_limits<double>::quiet_NaN()), at3(numeric_limits<double>::quiet_NaN()), at4(numeric_limits<double>::quiet_NaN()), ap1(numeric_limits<double>::quiet_NaN()), ap2(numeric_limits<double>::quiet_NaN()), ap3(numeric_limits<double>::quiet_NaN()), ap4(numeric_limits<double>::quiet_NaN()), n(-1), Z(-1), Debye_approx(false), thermal_type(0), bn(0)
 {
   ifstream fin;
   string sline;
@@ -183,8 +183,8 @@ EOS::EOS(string phaseinput, string filename):phasetype(phaseinput),eqntype(5), V
 
   rhotable=new double[nline];
   Ptable=new double[nline];
-  
-  // grl interpolation require strictly increasing x.  Reverse the array order if x is decreasing. 
+
+  // grl interpolation require strictly increasing x.  Reverse the array order if x is decreasing.
   
   fin>>rhotable[0]>>Ptable[0];
   fin>>rhotable[1]>>Ptable[1];
@@ -202,11 +202,6 @@ EOS::EOS(string phaseinput, string filename):phasetype(phaseinput),eqntype(5), V
   acc = gsl_interp_accel_alloc ();
   spline = gsl_spline_alloc (gsl_interp_steffen, nline);
   gsl_spline_init (spline, Ptable, rhotable, nline);
-  
-  
-  //  cout << "rhotable is " << endl;
-  //for (int i = 0; i <= 2000; i++) 
-   // cout << rhotable[i]<< endl; //%%% something went wrong 
 }
 
 EOS::EOS(string phaseinput, double (*f)(double P, double T), double (*g)(double rho, double T)):phasetype(phaseinput),eqntype(0), V0(numeric_limits<double>::quiet_NaN()), K0(numeric_limits<double>::quiet_NaN()), K0p(numeric_limits<double>::quiet_NaN()), K0pp(numeric_limits<double>::quiet_NaN()), mmol(numeric_limits<double>::quiet_NaN()), P0(0), Theta0(numeric_limits<double>::quiet_NaN()), gamma0(numeric_limits<double>::quiet_NaN()), beta(numeric_limits<double>::quiet_NaN()), gammainf(numeric_limits<double>::quiet_NaN()), gamma0p(numeric_limits<double>::quiet_NaN()), e0(numeric_limits<double>::quiet_NaN()), g(numeric_limits<double>::quiet_NaN()), T0(300), alpha0(numeric_limits<double>::quiet_NaN()), alpha1(0), xi(0), cp_a(numeric_limits<double>::quiet_NaN()), cp_b(0), cp_c(0), at1(numeric_limits<double>::quiet_NaN()), at2(numeric_limits<double>::quiet_NaN()), at3(numeric_limits<double>::quiet_NaN()), at4(numeric_limits<double>::quiet_NaN()), ap1(numeric_limits<double>::quiet_NaN()), ap2(numeric_limits<double>::quiet_NaN()), ap3(numeric_limits<double>::quiet_NaN()), ap4(numeric_limits<double>::quiet_NaN()), n(-1), Z(-1), Debye_approx(false), rhotable(NULL), Ptable(NULL),  bn(0), acc(NULL), spline(NULL), nline(0)
@@ -221,7 +216,7 @@ EOS::EOS(string phaseinput, double (*f)(double P, double T), double (*g)(double 
     thermal_type = 0;
 }
 
-EOS::EOS(string phaseinput, double *Plist, double *rholist, int len_list):phasetype(phaseinput),eqntype(5), V0(numeric_limits<double>::quiet_NaN()), K0(numeric_limits<double>::quiet_NaN()), K0p(numeric_limits<double>::quiet_NaN()), K0pp(numeric_limits<double>::quiet_NaN()), mmol(numeric_limits<double>::quiet_NaN()), P0(0), Theta0(numeric_limits<double>::quiet_NaN()), gamma0(numeric_limits<double>::quiet_NaN()), beta(numeric_limits<double>::quiet_NaN()), gammainf(numeric_limits<double>::quiet_NaN()), gamma0p(numeric_limits<double>::quiet_NaN()), e0(numeric_limits<double>::quiet_NaN()), g(numeric_limits<double>::quiet_NaN()), T0(300), alpha0(numeric_limits<double>::quiet_NaN()), alpha1(0), xi(0), cp_a(numeric_limits<double>::quiet_NaN()), cp_b(0), cp_c(0), at1(numeric_limits<double>::quiet_NaN()), at2(numeric_limits<double>::quiet_NaN()), at3(numeric_limits<double>::quiet_NaN()), at4(numeric_limits<double>::quiet_NaN()), ap1(numeric_limits<double>::quiet_NaN()), ap2(numeric_limits<double>::quiet_NaN()), ap3(numeric_limits<double>::quiet_NaN()), ap4(numeric_limits<double>::quiet_NaN()), n(-1), Z(-1), Debye_approx(false), thermal_type(0), bn(0), nline(len_list)
+EOS::EOS(string phaseinput, double *Plist, double *rholist, int len_list):phasetype(phaseinput),eqntype(7), V0(numeric_limits<double>::quiet_NaN()), K0(numeric_limits<double>::quiet_NaN()), K0p(numeric_limits<double>::quiet_NaN()), K0pp(numeric_limits<double>::quiet_NaN()), mmol(numeric_limits<double>::quiet_NaN()), P0(0), Theta0(numeric_limits<double>::quiet_NaN()), gamma0(numeric_limits<double>::quiet_NaN()), beta(numeric_limits<double>::quiet_NaN()), gammainf(numeric_limits<double>::quiet_NaN()), gamma0p(numeric_limits<double>::quiet_NaN()), e0(numeric_limits<double>::quiet_NaN()), g(numeric_limits<double>::quiet_NaN()), T0(300), alpha0(numeric_limits<double>::quiet_NaN()), alpha1(0), xi(0), cp_a(numeric_limits<double>::quiet_NaN()), cp_b(0), cp_c(0), at1(numeric_limits<double>::quiet_NaN()), at2(numeric_limits<double>::quiet_NaN()), at3(numeric_limits<double>::quiet_NaN()), at4(numeric_limits<double>::quiet_NaN()), ap1(numeric_limits<double>::quiet_NaN()), ap2(numeric_limits<double>::quiet_NaN()), ap3(numeric_limits<double>::quiet_NaN()), ap4(numeric_limits<double>::quiet_NaN()), n(-1), Z(-1), Debye_approx(false), thermal_type(0), bn(0), nline(len_list)
 {
   density_extern=NULL;
   entropy_extern=NULL;
@@ -244,11 +239,10 @@ EOS::EOS(string phaseinput, double *Plist, double *rholist, int len_list):phaset
       rhotable[i] = rholist[i];
       Ptable[i]   = Plist[i];
     }
-
+  
   acc = gsl_interp_accel_alloc ();
   spline = gsl_spline_alloc (gsl_interp_steffen, nline);
   gsl_spline_init (spline, Ptable, rhotable, nline);
- 
 }
 
 EOS::EOS(string phaseinput, double params[][2], double bparams[], int length, int blength):phasetype(phaseinput),eqntype(8), V0(numeric_limits<double>::quiet_NaN()), K0(numeric_limits<double>::quiet_NaN()), K0p(numeric_limits<double>::quiet_NaN()), K0pp(numeric_limits<double>::quiet_NaN()), mmol(numeric_limits<double>::quiet_NaN()), P0(0), Theta0(numeric_limits<double>::quiet_NaN()), gamma0(numeric_limits<double>::quiet_NaN()), beta(numeric_limits<double>::quiet_NaN()), gammainf(numeric_limits<double>::quiet_NaN()), gamma0p(numeric_limits<double>::quiet_NaN()), e0(numeric_limits<double>::quiet_NaN()), g(numeric_limits<double>::quiet_NaN()), T0(300), alpha0(numeric_limits<double>::quiet_NaN()), alpha1(0), xi(0), cp_a(numeric_limits<double>::quiet_NaN()), cp_b(0), cp_c(0), at1(numeric_limits<double>::quiet_NaN()), at2(numeric_limits<double>::quiet_NaN()), at3(numeric_limits<double>::quiet_NaN()), at4(numeric_limits<double>::quiet_NaN()), ap1(numeric_limits<double>::quiet_NaN()), ap2(numeric_limits<double>::quiet_NaN()), ap3(numeric_limits<double>::quiet_NaN()), ap4(numeric_limits<double>::quiet_NaN()), n(-1), Z(-1), Debye_approx(false), thermal_type(8), rhotable(NULL), Ptable(NULL), bn(blength), acc(NULL), spline(NULL), nline(0)		
@@ -877,7 +871,7 @@ double EOS::density(double P, double T, double rho_guess)
   else if(density_extern)
     return density_extern(P, T);
   
-  else if(eqntype == 5)		// interpolate an input file
+  else if(eqntype == 7)		// interpolate an input file
   {
 
     P /= 1E10;
@@ -1203,7 +1197,9 @@ double EOS::Press(double rho, double T)
 {
   double P;
   double V = volume(rho);	// volume in cm^3/mol
-
+  //  eqntype=7;
+	
+	
   switch(geteqntype())
   {
   case 0:			// BM3
@@ -1223,6 +1219,11 @@ double EOS::Press(double rho, double T)
     P = Holzapfel(rho);
     break;
   case 4:			// Keane
+  case 5:
+//	cout<<"T="<< T <<"rho="<< 
+	//getchar();
+     P=QEOS(T,rho, 7497); //QEOS
+     break;  
   case 12:
     P = Keane(rho);
     break;
@@ -1240,6 +1241,106 @@ double EOS::Press(double rho, double T)
     P+= Pth(V,T);
 
   return P;
+}
+
+
+double QEOS(double T, double rho, const int size) {
+
+	
+	double P_line = 0.0, T_line = 0.0, rho_line = 0.0, tmp = 0.0, Tlow = 0.0, Thigh = 0.0, T0 = 0.0, P=0.0;
+	double P_table[size], T_table[size], rho_table[size];
+	double rhohigh[size], rholow[size], Phigh[size], Plow[size], rhoiterp[size], Piterp[size]; //Note that not entire array is used. 
+	
+
+	FILE* fp = fopen("tabulated/QEOS_full.txt", "r");
+	int j, i, blocksize, jbrake;
+
+	if (!fp) {
+		perror("fopen");
+		return -1.0;
+	}
+
+	char line[512];
+
+	if (!fgets(line, sizeof line, fp) ) {
+		fprintf(stderr, "Invalid or missing header.\n");
+		return -1.0;
+	}
+	j = 0;
+
+
+	while (fgets(line, sizeof line, fp)) {
+		if (3 == sscanf(line, "%lf%lf%lf", &T_line, &rho_line, &P_line)) {
+			T_table[j] = T_line;
+			rho_table[j] = rho_line;
+			P_table[j] = P_line;
+			j = j + 1;
+
+		}
+	}
+
+	fclose(fp);
+	T0 = T_table[0];
+
+	for (j = 0; j < size; j++) {
+		tmp = T_table[j];
+		if (tmp > T0) {
+			break;
+		}
+
+	}	// j breaks so [0--j] is one block size
+
+	blocksize = j;
+
+
+	for (j = 0; j < size; j++) {
+		tmp = T_table[j];
+		if (tmp > T) {
+			break;
+		}
+
+	} //Find T in table that is larger than given T
+
+	Tlow = T_table[j - 1];
+	Thigh = T_table[j];
+	jbrake = j; // a place there two blocks meet
+
+
+
+	i = 0;
+	for (j = jbrake; j <= blocksize + jbrake - 1; j++) {
+		Phigh[i] = P_table[j];
+		rhohigh[i] = rho_table[j];
+		i++;
+
+	}
+
+	i = 0;
+	for (j = jbrake - blocksize ; j <= jbrake; j++) {
+		Plow[i] = P_table[j];
+		rholow[i] = rho_table[j];
+		i++;
+
+	}
+	for (j = 0; j < blocksize ; j++) { //intepulation between two blocks by T
+		Piterp[j] = Plow[j] + (Phigh[j] - Plow[j])  / (Thigh - Tlow) * (T - Tlow); //Not useful in my case
+		rhoiterp[j] = rholow[j] + (rhohigh[j] - rholow[j]) / (Thigh - Tlow) * (T - Tlow); 
+
+	}	
+	
+	for (j = 0; j < blocksize ; j++) { //intepulation inside one block by rho
+		
+		if (rhoiterp[j]>=rho)
+		{
+
+			P= Piterp[j-1] + (rho - rhoiterp[j-1])* (Piterp[j] - Piterp[j-1])  / (rhoiterp[j] - rhoiterp[j-1]);
+			
+			break;
+		}
+	}
+	
+	
+	return P;
 }
 
 double S_T(double V, void *params)

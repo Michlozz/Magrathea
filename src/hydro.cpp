@@ -174,7 +174,7 @@ hydro::hydro(double Rp, vector<PhaseDgm> &Comp_in, vector<double> Mass_Comp, vec
   EOS *Phase, *new_Phase;
   int thermal;
   M_Comp = Mass_Comp;
-  for (uint i=0; i<Comp_in.size(); i++) 
+  for (unsigned int i=0; i<Comp_in.size(); i++) 
     Comp.push_back(Comp_in[i]); 
 
   int n_Comp = M_Comp.size();
@@ -675,7 +675,7 @@ hydro::hydro(double Rp, double Pc, double Tc,  vector<PhaseDgm> &Comp_in, vector
   EOS *Phase, *new_Phase;
   int thermal;
   M_Comp = Mass_Comp;
-  for (uint i=0; i<Comp_in.size(); i++) 
+  for (unsigned int i=0; i<Comp_in.size(); i++) 
     Comp.push_back(Comp_in[i]); 
   int n_Comp = M_Comp.size();
   double Mtot = accumulate(M_Comp.begin(), M_Comp.end(), 0.0) * ME;
@@ -1352,6 +1352,7 @@ void hydro::print(string outfile, bool debug)
   int j=0;
   EOS *newPhase = Phaselist[0], *Phase=NULL;
 
+  fout<<"Index\t Radius (earth)"<<"\t "<<"P (GPa)"<<"\t "<<"M (earth)"<<"\t "<<"Density (g cm^-3)"<<"\t "<<"T (K)"<<"\t "<<"Phase"<<endl;
   
   for(int i=0;i<int(rb.size());i++)
   {

@@ -27,7 +27,7 @@
 21.	cp_b, fitting coefficient for specific heat capacity, in 10^7 erg/g/K^2
 22.	cp_c, cp = cp_a + cp_b*T - cp_c/T^2. cp in 10^7 erg/g/K, cp_c in 10^7 erg*K/g
 23.	Debye_approx, whether use Debye approximation or Einstein approximation. Debye approximation is slower but more accurate at temperature lower than Debye/Einstein temperature.  Positive number for Debye, otherwise Einstein.
-24.     thermal_type, indicates the thermal type of the phase.  0 indicates no temperature profile available, 1 indicates entropy method, 2 indicates the temperature gradient method.  The only method to set the gradient is using the modify_extern_dTdP function, 3 indicates ideal gas, 4 indicates the EOS is fitted along the isentrope, type 8 indicates RTpress style.
+24.     thermal_type, indicates the thermal type of the phase.  0 indicates no temperature profile available, 1 indicates entropy method, 2 indicates the temperature gradient method.  The only method to set the gradient is using the modify_dTdP function, 3 indicates ideal gas, 4 indicates the EOS is fitted along the isentrope, type 8 indicates RTpress style.
 25-32.  at1-at4 & ap1 - ap4
 
 
@@ -107,10 +107,6 @@ EOS *Fe_15Si = new EOS("Fe-15Si (Wicks)", Fe_15Si_array, sizeof(Fe_15Si_array)/2
 EOS *Fe_Seager = new EOS("Fe (Seager)", "./tabulated/iron.txt");
 
 // -----------------------------------
-// Iron, Seager Fake
-	EOS *Fe_Fake = new EOS("Fe Fake", "./tabulated/Test_Iron.txt");
-	
-// -----------------------------------
 // Iron Dummy, Used to fill in phase space that no EOS provided.
 
 EOS *Fe_Dummy = new EOS("Fe Dummy", Fe_hcp3_array, sizeof(Fe_hcp3_array)/2/sizeof(Fe_hcp3_array[0][0]));
@@ -188,6 +184,9 @@ EOS *Mw = new EOS("Magnesiowustite (Sotin)", Mw_array, sizeof(Mw_array)/2/sizeof
 double Si_Pv_array[][2] = {{0,2}, {1,25.206}, {2,230.05}, {3,4.142}, {5,mMg+mSi+3*mO}, {6, -11.2}, {7, 1000}, {8,1.506}, {9,7.02469}, {10,1.14821}, {14,5}};
 
 EOS *Si_Pv = new EOS("Brg (Oganov)", Si_Pv_array, sizeof(Si_Pv_array)/2/sizeof(Si_Pv_array[0][0]));
+
+double Si_QEOS_array[][2] = {{0,5}, {1, 40}, {5, mSi}};
+EOS *Si_QEOS = new EOS("Si (QEOS)", Si_QEOS_array, sizeof(Si_QEOS_array)/2/sizeof(Si_QEOS_array[0][0]));
 
 // ---------------------------------
 // Bridgmanite/Perovskite, MgSiO3, Shim & Duffy 2000, American Mineralogist
@@ -389,9 +388,6 @@ EOS *IceX_HS = new EOS("Ice X (Hermann)", IceX_HS_array, sizeof(IceX_HS_array)/2
 // -----------------------------------
 // Ice, Seager et al. 2007 ApJ 669:1279, tabulate EOS
 EOS *Ice_Seager = new EOS("Ice (Seager)", "./tabulated/water.txt");
-
-// Si, Temporal for test, tabulate EOS
-EOS *Si_QEOS = new EOS("Si (QEOS)", "./tabulated/QEOS.txt");
 
 // -----------------------------------
 // Ice Dummy,  Used to fill in phase space that no EOS provided.
