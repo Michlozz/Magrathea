@@ -188,6 +188,8 @@ EOS *Si_Pv = new EOS("Brg (Oganov)", Si_Pv_array, sizeof(Si_Pv_array)/2/sizeof(S
 double Si_QEOS_array[][2] = {{0,5}, {1, 40}, {5, mSi}};
 EOS *Si_QEOS = new EOS("Si (QEOS)", Si_QEOS_array, sizeof(Si_QEOS_array)/2/sizeof(Si_QEOS_array[0][0]));
 
+//Si_Pv->modify_dTdP(dTdP_gas);//@@@
+
 // ---------------------------------
 // Bridgmanite/Perovskite, MgSiO3, Shim & Duffy 2000, American Mineralogist
 
@@ -460,6 +462,18 @@ double dTdP_gas(double P, double T)
   else
   {
     cout<<"Error: Can't get adiabatic temperature gradient for diatomic gas at P=0."<<endl;
+    return numeric_limits<double>::quiet_NaN();
+  }
+}
+
+double dTdP_QEOS(double P, double T)
+// return the adiabatic temperature gradient at given pressure and temperature point for rock
+{
+  if (P != 0)
+    return 716.49 - 0.466*T + 0.00012 *(T*T);
+  else
+  {
+    cout<<"Error: negative P!"<<endl;
     return numeric_limits<double>::quiet_NaN();
   }
 }
