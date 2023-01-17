@@ -1220,9 +1220,11 @@ double EOS::Press(double rho, double T)
     break;
   case 4:			// Keane
   case 5:
-//	cout<<"T="<< T <<"rho="<< 
-	//getchar();
-     P=QEOS(T,rho, 7497); //QEOS
+	cout<<"Begin: T="<< T <<" rho="<< rho<< " P= " <<P;
+	cin.ignore();  
+     P=QEOS(T,rho); //QEOS
+	cout<<"End: T="<< T <<" rho="<< rho<< " P= " <<P;
+	cin.ignore();	 
      break;  
   case 12:
     P = Keane(rho);
@@ -1240,11 +1242,12 @@ double EOS::Press(double rho, double T)
 // thermal pressure
     P+= Pth(V,T);
 
+	
   return P;
 }
 
 
-double QEOS(double T, double rho, const int size) {
+double QEOS_old(double T, double rho, const int size) {
 
 	
 	double P_line = 0.0, T_line = 0.0, rho_line = 0.0, tmp = 0.0, Tlow = 0.0, Thigh = 0.0, T0 = 0.0, P=0.0;
@@ -1252,8 +1255,9 @@ double QEOS(double T, double rho, const int size) {
 	double rhohigh[size], rholow[size], Phigh[size], Plow[size], rhoiterp[size], Piterp[size]; //Note that not entire array is used. 
 	
 
-	FILE* fp = fopen("tabulated/QEOS_full.txt", "r");
+	FILE* fp = fopen("Magrathea-master/tabulated/QEOS_full.txt", "r");
 	int j, i, blocksize, jbrake;
+	//cout<<"In in QEOS, T="<<T<<"rho= "<<rho << "P= "<< P;
 
 	if (!fp) {
 		perror("fopen");
@@ -1338,8 +1342,95 @@ double QEOS(double T, double rho, const int size) {
 			break;
 		}
 	}
-	
-	//Si_QEOS->modify_dTdP(dTdP_gas);
+	//if (T>2850.01&& T<3201.2) {
+	//	cout << "T=" << T <<" ; Rho=" << rho<<" ; P="<<P;	
+	//	cin.ignore();	
+	//}
+	return P;
+}
+
+double QEOS(double T, double rho) {
+    double P;
+    double p00,p10,p01,p20,p02,p11,p12,p21,p30,p03;
+    T= T*8.61697e-8; // form K to Kev
+    T=log10(T); //to Log
+    rho=log10(rho);//(assuming cgs) to Log
+    
+    if (rho<=0.4 && T<4.2){ //region 1
+        p00=-8.773;
+        p10=4.017;
+        p01=0;
+        p20=0.4632;
+        p11=0;
+        p02=0;
+        p30=0.02391;
+        p21=0;
+        p12=0;
+        p03 = 0;
+    }
+    if (rho>0.4){ //region 2
+       p00 =      0.1553;
+       p10 =       3.622;
+       p01 =      0.4699;
+       p20 =      0.5747;
+       p11 =       -1.88;
+       p02 =      -0.975;
+       p30 =     0.03134;
+       p21 =     -0.1292;
+       p12 =      0.2801;
+       p03 =      0.4024;
+
+    }
+    if (rho<=0.4 && T>=-4.2 && T<=-3.0){ //region 3 
+        p00=3;
+        if (rho> 6.7*T*T*T+61.95*T*T +192.2*T +199.6) ///region 3a
+         {
+            p00 =       132.2;
+            p10 =         138;
+            p01 =       4.975;
+            p20 =       46.53;
+            p11 =       2.151;
+            p02 =      0.1717;
+            p30 =       5.282;
+            p21 =      0.2285;
+            p12 =     0.04218;
+            p03 =  -0.0002741;
+
+         }   
+         else{ ///region 3b
+            p00 =     -0.9329;
+            p10 =       1.467;
+            p01 =      0.9625;
+            p20 =      0;
+            p11 =      0;
+            p02 =      0;
+            p30 =      0;
+            p21 =      0;
+            p12 =      0;
+            p03 =      0;
+            
+         }   
+        }
+   if (T>-3 && rho<=0.4) {//region 4
+            p00 =      -1.364;
+            p10 =       0.9002;
+            p01 =      0.9935;
+            p20 =      -0.2522;
+            p11 =      0.05099;
+            p02 =      -0.003507;
+            p30 =      -0.03374;
+            p21 =      0.009997;
+            p12 =      -0.0004553;
+            p03 =      0;
+    }
+    P= p00 + p10*T + p01*rho + p20*T*T + p11*T*rho + p02*rho*rho +p21*T*T *rho  +   p12*T*rho*rho + p30*T*T*T+ p03*rho*rho*rho;
+	cout<< "Inside (preconvert) T= "<< T <<" rho= "<<rho << " P= "<<P <<"\n";	
+    P= pow(10.0,P); // in jrk/cc (=1 petapascal)
+    P= P* 1e16; // to cgs (dynes * cm^-2)
+
+	cout << "Press Enter to Continue";
+	cin.ignore();
+
 	return P;
 }
 
@@ -1703,3 +1794,5 @@ double EOS::density(double P1, double T1, double rho, double P2, double &T2)
     return rho2;
   }
 }
+
+  
