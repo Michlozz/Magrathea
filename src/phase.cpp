@@ -379,15 +379,17 @@ EOS* find_Si_phase(double P, double T)
     return NULL;
   }
 
- // P /= 1E10;			// convert microbar to GPa
- // // Default Mantle
- // if(P > 112.5 + 7E-3*T)	// Phase transfer curve from Ono & Oganov 2005, Earth Planet. Sci. Lett. 236, 914
- //   return Si_PPv_Sakai;
- // else if (T > 1830*pow(1+P/4.6, 0.33)) // Melting curve from Belonoshko et al. 2005 Eq. 2
+  P /= 1E10;			// convert microbar to GPa
+  // Default Mantle
+  if(P > 112.5 + 7E-3*T)	// Phase transfer curve from Ono & Oganov 2005, Earth Planet. Sci. Lett. 236, 914
+//    return Si_PPv_Sakai;
+	  return Si_QEOS;
+  else if (T > 1830*pow(1+P/4.6, 0.33)) // Melting curve from Belonoshko et al. 2005 Eq. 2
  //   return Si_Liquid_Wolf;
- // else
-
-   // return Si_Pv;
+   return Si_QEOS;
+  else
+  //  return Si_Pv;
+	return Si_QEOS;
 
   // Detailed Upper Mantle
   //if(P > 112.5 + 7E-3*T)      // Phase transfer curve from Ono & Oganov 2005, Earth Planet. Sci. Lett. 236, 914
@@ -409,8 +411,7 @@ EOS* find_Si_phase(double P, double T)
   //else if(P > 23.83)
   //  return Si_BM2fit;
   //else
-  // return Si_PREM;
-	return Si_QEOS;
+  //  return Si_PREM;
 }
 
 // ---------------------------------
