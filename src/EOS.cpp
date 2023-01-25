@@ -1224,16 +1224,16 @@ double EOS::Press(double rho, double T)
     P = rho*kb*T/(mmol*mp);
     return P;
   case 5:
-	cout << "T= "<< T<<"rho= "<< rho <<" \n";
+//	cout << "T= "<< T<<"rho= "<< rho <<" \n";
 		
 	P =QEOS(T,rho); 
-	cout << "P= "<<P << "\n ";	
-	cout << "P (ideal gas)= "<<rho*kb*T/(mmol*mp)<<" \n";
-	cout << "kb "<<kb << "\n ";	
-	cout << "mmol "<<mmol << "\n ";	
-	cout << "mp "<<mp << "\n ";			
-	cout << "Press Enter to Continue";
-	cin.ignore()	;
+//	cout << "P= "<<P << "\n ";	
+//	cout << "P (ideal gas)= "<<rho*kb*T/(mmol*mp)<<" \n";
+//	cout << "kb "<<kb << "\n ";	
+//	cout << "mmol "<<mmol << "\n ";	
+//	cout << "mp "<<mp << "\n ";			
+//	cout << "Press Enter to Continue";
+//	cin.ignore()	;
 	
 	break;
   default:
@@ -1324,12 +1324,12 @@ double QEOS(double T, double rho) {
             p03 =      0;
     }
     P= p00 + p10*T + p01*rho + p20*T*T + p11*T*rho + p02*rho*rho +p21*T*T *rho  +   p12*T*rho*rho + p30*T*T*T+ p03*rho*rho*rho;
-	cout<< "Inside (preconvert) T= "<< T <<" rho= "<<rho << " P= "<<P <<"\n";	
+//	cout<< "Inside (preconvert) T= "<< T <<" rho= "<<rho << " P= "<<P <<"\n";	
     P= pow(10.0,P); // in jrk/cc (=1 petapascal)
     P= P* 1e16; // to cgs (dynes * cm^-2)
-	cout <<" P (post convert) = "<< P <<"\n";
-	cout << "Press Enter to Continue";
-	cin.ignore();
+//	cout <<" P (post convert) = "<< P <<"\n";
+//	cout << "Press Enter to Continue";
+//	cin.ignore();
 
 	return P;
 }  
