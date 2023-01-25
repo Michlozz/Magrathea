@@ -914,7 +914,7 @@ double EOS::density(double P, double T, double rho_guess)
     if(rho_guess < 0.5 || !gsl_finite(rho_guess) || dP_EOS(rho_guess, &params) < 0)	// rho_guess will be set to negative if it is unknown. Ideal gas doesn't need a rho_guess.
       // if rho_guess is too small, dP/drho can be negative, and the solver may be tricked to the unphysical branch of the solution.
     {
-      rho_guess = density(V0) + P/1E13;
+      rho_guess = density(V0) + P/1E3;
     }
 
     int iter = 0, max_iter = 100;
@@ -1197,9 +1197,7 @@ double EOS::Press(double rho, double T)
 {
   double P;
   double V = volume(rho);	// volume in cm^3/mol
-  //  eqntype=7;
-	
-	
+
   switch(geteqntype())
   {
   case 0:			// BM3
@@ -1219,19 +1217,25 @@ double EOS::Press(double rho, double T)
     P = Holzapfel(rho);
     break;
   case 4:			// Keane
-  case 5:
-	cout<<"Begin: T="<< T <<" rho="<< rho<< " P= " <<P;
-	cin.ignore();  
-     P=QEOS(T,rho); //QEOS
-	cout<<"End: T="<< T <<" rho="<< rho<< " P= " <<P;
-	cin.ignore();	 
-     break;  
   case 12:
     P = Keane(rho);
     break;
   case 6:			// ideal gas
     P = rho*kb*T/(mmol*mp);
     return P;
+  case 5:
+	cout << "T= "<< T<<"rho= "<< rho <<" \n";
+		
+	P =QEOS(T,rho); 
+	cout << "P= "<<P << "\n ";	
+	cout << "P (ideal gas)= "<<rho*kb*T/(mmol*mp)<<" \n";
+	cout << "kb "<<kb << "\n ";	
+	cout << "mmol "<<mmol << "\n ";	
+	cout << "mp "<<mp << "\n ";			
+	cout << "Press Enter to Continue";
+	cin.ignore()	;
+	
+	break;
   default:
     cout<<"Error: No such EOS type "<<geteqntype()<<" used in "<<phasetype<<endl;
     P = -1;
@@ -1242,111 +1246,7 @@ double EOS::Press(double rho, double T)
 // thermal pressure
     P+= Pth(V,T);
 
-	
   return P;
-}
-
-
-double QEOS_old(double T, double rho, const int size) {
-
-	
-	double P_line = 0.0, T_line = 0.0, rho_line = 0.0, tmp = 0.0, Tlow = 0.0, Thigh = 0.0, T0 = 0.0, P=0.0;
-	double P_table[size], T_table[size], rho_table[size];
-	double rhohigh[size], rholow[size], Phigh[size], Plow[size], rhoiterp[size], Piterp[size]; //Note that not entire array is used. 
-	
-
-	FILE* fp = fopen("Magrathea-master/tabulated/QEOS_full.txt", "r");
-	int j, i, blocksize, jbrake;
-	//cout<<"In in QEOS, T="<<T<<"rho= "<<rho << "P= "<< P;
-
-	if (!fp) {
-		perror("fopen");
-		return -1.0;
-	}
-
-	char line[512];
-
-	if (!fgets(line, sizeof line, fp) ) {
-		fprintf(stderr, "Invalid or missing header.\n");
-		return -1.0;
-	}
-	j = 0;
-
-
-	while (fgets(line, sizeof line, fp)) {
-		if (3 == sscanf(line, "%lf%lf%lf", &T_line, &rho_line, &P_line)) {
-			T_table[j] = T_line;
-			rho_table[j] = rho_line;
-			P_table[j] = P_line;
-			j = j + 1;
-
-		}
-	}
-
-	fclose(fp);
-	T0 = T_table[0];
-
-	for (j = 0; j < size; j++) {
-		tmp = T_table[j];
-		if (tmp > T0) {
-			break;
-		}
-
-	}	// j breaks so [0--j] is one block size
-
-	blocksize = j;
-
-
-	for (j = 0; j < size; j++) {
-		tmp = T_table[j];
-		if (tmp > T) {
-			break;
-		}
-
-	} //Find T in table that is larger than given T
-
-	Tlow = T_table[j - 1];
-	Thigh = T_table[j];
-	jbrake = j; // a place there two blocks meet
-
-
-
-	i = 0;
-	for (j = jbrake; j <= blocksize + jbrake - 1; j++) {
-		Phigh[i] = P_table[j];
-		rhohigh[i] = rho_table[j];
-		i++;
-
-	}
-
-	i = 0;
-	for (j = jbrake - blocksize ; j <= jbrake; j++) {
-		Plow[i] = P_table[j];
-		rholow[i] = rho_table[j];
-		i++;
-
-	}
-	for (j = 0; j < blocksize ; j++) { //intepulation between two blocks by T
-		Piterp[j] = Plow[j] + (Phigh[j] - Plow[j])  / (Thigh - Tlow) * (T - Tlow); //Not useful in my case
-		rhoiterp[j] = rholow[j] + (rhohigh[j] - rholow[j]) / (Thigh - Tlow) * (T - Tlow); 
-
-	}	
-	
-	for (j = 0; j < blocksize ; j++) { //intepulation inside one block by rho
-		
-		if (rhoiterp[j]>=rho)
-		{
-
-			P= Piterp[j-1] + (rho - rhoiterp[j-1])* (Piterp[j] - Piterp[j-1])  / (rhoiterp[j] - rhoiterp[j-1]);
-			
-			break;
-		}
-	}
-	//if (T>2850.01&& T<3201.2) {
-	//	cout << "T=" << T <<" ; Rho=" << rho<<" ; P="<<P;	
-	//	cin.ignore();	
-	//}
-	return P;
 }
 
 double QEOS(double T, double rho) {
@@ -1427,12 +1327,12 @@ double QEOS(double T, double rho) {
 	cout<< "Inside (preconvert) T= "<< T <<" rho= "<<rho << " P= "<<P <<"\n";	
     P= pow(10.0,P); // in jrk/cc (=1 petapascal)
     P= P* 1e16; // to cgs (dynes * cm^-2)
-
+	cout <<" P (post convert) = "<< P <<"\n";
 	cout << "Press Enter to Continue";
 	cin.ignore();
 
 	return P;
-}
+}  
 
 double S_T(double V, void *params)
 // entropy at constant T, volume in cm^3/mol
@@ -1793,6 +1693,6 @@ double EOS::density(double P1, double T1, double rho, double P2, double &T2)
     gsl_root_fdfsolver_free (s);
     return rho2;
   }
-}
-
   
+
+}
