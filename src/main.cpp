@@ -16,7 +16,7 @@ const double ode_eps_rel2 = 1E-10; // relative error tolerance for ode integrato
 const double P_eps_rel = 1E-10;	// relative error tolerance in mode 1 central pressure determination (1E-10).  Should not be more restrict than ode_eps_rel.
 const double fit_eps_rel = 1E-4; // the relative error tolerance at the fitting point in mode 0 round 2 (1E-4). Should be four orders of magnitudes larger than ode_eps_rel1.
 vector<double> ave_rho = {15, 5, 2, 1E-3};// Assuming the density of the core is 15, mantle is 5, water is 2, and gas is 1E-3.
-const bool verbose = false;		  // Whether print warnings.
+const bool verbose = true;		  // Whether print warnings.
 const double P_surface = 1E5;		  // The pressure level that the broad band optical transit radius probes. (in microbar)
 int count_shoot = 0;			  // used to count the total number of shootings per each solution
 int count_step = 0;			  // used to count the sum of integral steps in all shooting results.
@@ -26,6 +26,8 @@ int main()
   gsl_set_error_handler_off();  //Dismiss the abortion from execution, which is designed for code testing.
   hydro* planet;
   ifstream fin;
+  Si_QEOS->modify_dTdP(dTdP_QEOS);
+
   int input_mode=0;
   // Choose between the 8 available input_mode values:
   // 0: regular solver, 1: temperature-free solver, 2: two-layer solver, 
@@ -36,10 +38,11 @@ int main()
 
   if (input_mode == 0)
   {
+	//  Si_QEOS->density(P, T, -1); // P in cgs (microbar), return density in g/cm^3
     vector<PhaseDgm> Comp = {Fe, Si, water, atm};
-    vector<double> Tgap = {0, 0, 50, 300};
+    vector<double> Tgap = {0, 0, 0, 300};
     // The temperature of the outer boundary of the inner component minus the inner boundary of the outer component.  A positive number indicates temperature increases inward.  0 indicates the temperature is continuous at the boundary of components.  The last number is the planetary surface temperature.
-    vector<double> Mcomp =  {1.0,0.5,0.1,0.00001}; // Mass in Earth Masses of Core, Mantle, Hydrosphere, Atmosphere
+    vector<double> Mcomp =  {1.0,2.0,1.0,0.0001}; // Mass in Earth Masses of Core, Mantle, Hydrosphere, Atmosphere
     planet=fitting_method(Comp, Mcomp, Tgap, ave_rho, P_surface, false);
     cout<<count_shoot<<' '<<count_step<<endl;
     if (!planet)
@@ -228,7 +231,7 @@ int main()
     }
     gettimeofday(&start_time,NULL);
   
-    fout<<"MCore, MMantle, MWater, MGas, RCore, RMantle, RWater, RPlanet"<<endl;
+    fout<<"MCore\t MMantle\t MWater\t MGas\t RCore\t RMantle\t RWater\t RPlanet"<<endl;
     cout<<"Percentage completed:"<<endl;
     for(int i=0; i<nline; i++)
     {
@@ -339,7 +342,7 @@ int main()
       return 1;
     }
 
-    fout<<"MPlanet, MCore, MMantle, MWater, RCore, RMantle, RWater, RPlanet, RPosterior"<<endl;
+    fout<<"MPlanet\t MCore\t MMantle\t MWater\t RCore\t RMantle\t RWater\t RPlanet\t RPosterior"<<endl;
 //    #pragma omp parallel for schedule(dynamic) num_threads(3) private(planet, Rs)   
     for(int i=0; i<nline; i++) // Loop for each posterior
     {

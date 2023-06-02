@@ -1,5 +1,6 @@
 #include "EOS.h"
-#define DEBUG_LEVEL 2
+#define DEBUG_LEVEL 0
+double Xr=0.5;
 EOS::EOS():phasetype(""),eqntype(0), V0(numeric_limits<double>::quiet_NaN()), K0(numeric_limits<double>::quiet_NaN()), K0p(numeric_limits<double>::quiet_NaN()), K0pp(numeric_limits<double>::quiet_NaN()), mmol(numeric_limits<double>::quiet_NaN()), P0(0), Theta0(numeric_limits<double>::quiet_NaN()), gamma0(numeric_limits<double>::quiet_NaN()), beta(numeric_limits<double>::quiet_NaN()), gammainf(numeric_limits<double>::quiet_NaN()), gamma0p(numeric_limits<double>::quiet_NaN()), e0(numeric_limits<double>::quiet_NaN()), g(numeric_limits<double>::quiet_NaN()), T0(300), alpha0(numeric_limits<double>::quiet_NaN()), alpha1(0), xi(0), cp_a(numeric_limits<double>::quiet_NaN()), cp_b(0), cp_c(0), at1(numeric_limits<double>::quiet_NaN()), at2(numeric_limits<double>::quiet_NaN()), at3(numeric_limits<double>::quiet_NaN()), at4(numeric_limits<double>::quiet_NaN()), ap1(numeric_limits<double>::quiet_NaN()), ap2(numeric_limits<double>::quiet_NaN()), ap3(numeric_limits<double>::quiet_NaN()), ap4(numeric_limits<double>::quiet_NaN()), n(-1), Z(-1), Debye_approx(false), thermal_type(0), rhotable(NULL), Ptable(NULL), bn(0), acc(NULL), spline(NULL), nline(0)
 {
   density_extern=NULL;
@@ -865,12 +866,14 @@ double EOS::density(double P, double T, double rho_guess)
 
   int status;
   
+ 
   if(P < 0 || P > 1E16)		// unrealistic pressure
     return numeric_limits<double>::quiet_NaN();
 
-  else if(density_extern)
+  else if(density_extern) 
     return density_extern(P, T);
   
+
   else if(eqntype == 7)		// interpolate an input file
   {
 
@@ -956,17 +959,18 @@ double EOS::density(double P, double T, double rho_guess)
     if (!gsl_finite(rho))
     {
       if (verbose)
-	cout<<"Warning: Can't find the density for "<<phasetype<<" at pressure "<<P<<" GPa and temperature "<<T<<" K, initial guessed rho:"<<rho_guess<<". V0, K0, K0p: "<<V0<<' '<<K0<<' '<<K0p<<". Likely no solution exist for this physical condition under the EOS used."<<endl;
+	cout<<"dd Warning: Can't find the density for "<<phasetype<<" at pressure "<<P<<" GPa and temperature "<<T<<" K, initial guessed rho:"<<rho_guess<<". V0, K0, K0p: "<<V0<<' '<<K0<<' '<<K0p<<". Likely no solution exist for this physical condition under the EOS used."<<endl;
       
       gsl_root_fdfsolver_free (s);
       return numeric_limits<double>::quiet_NaN();
     }
     else if (status == GSL_CONTINUE)
     {
-      if (verbose)
-	cout<<"Warning: Can't find the density for "<<phasetype<<" at pressure "<<P<<" GPa and temperature "<<T<<" K within maximum interation "<<max_iter<<", initial guessed rho:"<<rho_guess<<". V0, K0, K0p: "<<V0<<' '<<K0<<' '<<K0p<<endl;
+      if (verbose)/// Im here @1@1
+	cout<<"cc Warning: Can't find the density for "<<phasetype<<" at pressure "<<P<<" GPa and temperature "<<T<<" K within maximum interation "<<max_iter<<", initial guessed rho:"<<rho_guess<<". V0, K0, K0p: "<<V0<<' '<<K0<<' '<<K0p<<endl;
       
       gsl_root_fdfsolver_free (s);
+	    return Rho_MixEOS(T, P, Xr);
       return numeric_limits<double>::quiet_NaN();
     }
 
@@ -1239,24 +1243,36 @@ double EOS::Press(double rho, double T)
 		//ofstream output_file3;
 		//output_file3.open("outputTPrho.txt");
 	 //@@@@
-		// if (rho<0){
-			// cout << "out with P= " << P <<endl;
+		 // if (rho<0){
+			// cout << "P= " << P <<endl;
 			// cout << "rho= " << rho <<endl;
 			// cout << "T= " << T <<endl;
 			// cout << "oldP= " << oldP <<endl;
 			// cout << "oldrho= " << oldrho <<endl;
 			
 		// }
-	 P= P_mixEOS(T,rho, 0.5,       1.5, 0.001, 1.0e-3 );
-	// #if DEBUG_LEVEL == 1
+		// P= P_mixEOS(1200,0.899545, 0.5,  962.259 , 0.001, 1.0e-3 );
 		// cout << "out with P= " << P <<endl;
-		// cout << "Rho_MixEOS(500, P, 0.5); ="<< Rho_MixEOS(500,  P, 0.5)<<endl;
-		// cin.ignore(); 
-	//	output_file3 << "T= "<<T<<" | P= "<<P<< " | rho= "<<rho <<endl;
+		// cin.ignore();
+		
+	 P= P_mixEOS(T,rho, Xr,  P_guesser( T,rho), 0.001, 1.0e-3 );
+	 
+	 
+	 
+	// P= P_mixEOS(1200,715116, 0.5,  962.259 , 0.001, 1.0e-3 );
+	// cout << "out with P= " << P <<endl;
+	 //cout<<"Rho_MixEOS(1200, 668.503, 0.5)"<<Rho_MixEOS(1200, 668.503, 0.5);
+	//cin.ignore();
+	#if DEBUG_LEVEL == 1
+		
+		//cout << "Rho_MixEOS(500, P, 0.5); ="<< Rho_MixEOS(500,  P, 0.5)<<endl;
+		//cin.ignore(); 
+	//	fstream outputFile666("output.txt", std::ios::app)
+	//	outputFile666 << "T= "<<T<<" | P= "<<P<< " | rho= "<<rho <<endl;
 		oldrho=rho;
 		oldP=P;
 		
-	// #endif
+	#endif
 
 	return P;
   default:
@@ -1274,30 +1290,91 @@ double EOS::Press(double rho, double T)
 
 void printline( double T, double P, double rho) {
 	
-	 std::fstream outputFile666("output.txt", std::ios::app); 
-       if (outputFile666.is_open()) {
+	 // std::fstream outputFile666("output.txt", std::ios::app); 
+       // if (outputFile666.is_open()) {
          
-          outputFile666 <<  "output: T= | " << T << " | P = " << P <<" rho= " << rho <<std::endl; // Add a line to the file
-          outputFile666.close(); // Close the file
-      } else {
-        std::cout << "Failed to open the file." << std::endl;
-      }
-	  
-	  //cin.ignore();  
+          // outputFile666 <<  "output: T= | " << T << " | P = " << P <<" rho= " << rho <<std::endl; // Add a line to the file
+          // outputFile666.close(); // Close the file
+      // } else {
+        // std::cout << "Failed to open the file." << std::endl;
+      // }
+	//  cout<<"T= | " << T << " | P = " << P <<" rho= " << rho <<endl;
+	 // cin.ignore();  
+}
+
+double P_guesser(double T, double rho){
+		// this funciton calcualtes very rath aproximation  of p as a funciton of T (K) and rho (cgs)
+	if (T<=0 || rho<=0){
+		cout<< "error in Pguess input!"<<endl;
+		cout <<"T= "<<T <<" rho= "<<rho<<endl;
+		cout << "returning P=1 ?"<<endl;
+		cin.ignore();
+		return 1.0;
+	}
+		
+	
+	double x=log10(T);
+	double y=log10(rho);
+    double p00 = 21.43;
+    double p10 = 43.86;
+    double p01 = 2.434;
+    double p20 = 28.3;
+    double p11 = 2.796;
+    double p02 = -0.1536;
+    double p30 = 8.314;
+    double p21 = 1.363;
+    double p12 = -0.02183;
+    double p03 = -0.01075;
+    double p40 = 1.062;
+    double p31 = 0.1897;
+    double p22 = 0.1015;
+    double p13 = -0.0404;
+    double p04 = 0.004273;
+    double p50 = 0.04808;
+    double p41 = 0.009866;
+    double p32 = 0.006876;
+    double p23 = 0.001249;
+    double p14 = -0.001778;
+    double p05 = 0.0002738;
+
+    double result = p00 +
+                    p10 * x +
+                    p01 * y +
+                    p20 * pow(x, 2) +
+                    p11 * x * y +
+                    p02 * pow(y, 2) +
+                    p30 * pow(x, 3) +
+                    p21 * pow(x, 2) * y +
+                    p12 * x * pow(y, 2) +
+                    p03 * pow(y, 3) +
+                    p40 * pow(x, 4) +
+                    p31 * pow(x, 3) * y +
+                    p22 * pow(x, 2) * pow(y, 2) +
+                    p13 * x * pow(y, 3) +
+                    p04 * pow(y, 4) +
+                    p50 * pow(x, 5) +
+                    p41 * pow(x, 4) * y +
+                    p32 * pow(x, 3) * pow(y, 2) +
+                    p23 * pow(x, 2) * pow(y, 3) +
+                    p14 * x * pow(y, 4) +
+                    p05 * pow(y, 5);
+					
+
+    return result;
 }
 
 
 double  P_mixEOS(double T, double rho0, double Xr, double Pguess , double epsilon, double DeltaRho) {
-	std::fstream outputFile666("output.txt", std::ios::app);
-    outputFile666 <<  "input: T= | " << T << " | P = " << Pguess <<" rho= " << rho0 <<std::endl; // Add a line to the file
-    outputFile666.close(); // Close the file	
+	//std::fstream outputFile666("output.txt", std::ios::app);
+    //outputFile666 <<  "input: T= | " << T << " | P = " << Pguess <<" rho= " << rho0 <<std::endl; // Add a line to the file
+    //outputFile666.close(); // Close the file	
 	if ( (Xr>1)||(T<0)||(rho0<0)){
-		cout <<"Error in input of P_mixEOS ! returning default" <<endl;
+		cout <<"Error in input of P_mixEOS ! returning default;P="<<Pguess <<endl;
 		cout <<"T= "<<T <<" rho= "<<rho0<< " Xr= "<<Xr <<endl;
-		cin.ignore();
+		//cin.ignore();
 		return Pguess;
 	}
-	//int printDebug=0; // 1 - turn on, 0 -turn off.
+
     double p =Pguess;
 	//double POld= Pguess;
     double rho = Rho_MixEOS(T, p, Xr);
@@ -1314,33 +1391,62 @@ double  P_mixEOS(double T, double rho0, double Xr, double Pguess , double epsilo
 	ofstream output_file2;
 	ofstream output_file;
 		
-	//if (printDebug==1){ // create output file
 		
 		output_file.open("outputDelta.txt");
 		output_file2.open("resedue.txt");
 		output_file << " P_guess= "<< p  <<"  | tolarance= " <<  toll <<" | rho0= " << rho0 <<"\n"; // write line to file		
-	//}
+	     output_file.flush();
 	#endif
 
-
 	for (int i = 0; i < 1e4; i++){
-    
+		
         double drho_dp = (Rho_MixEOS(T, p+epsilon, Xr) - rho) / epsilon; // gradient approximation
 		//cout << "T= "<<T<< " p= "<< p << " Xr=" << Xr<< " Rho_MixEOS(T, p, Xr)="<< Rho_MixEOS(T, p, Xr) << " stepsize= "<<alpha * (rho - rho0) / drho_dp<<"\n";
 		//cin.ignore();
-		
 		double stepsize = alpha * (rho - rho0) / drho_dp;	
+		if (abs(drho_dp)<=0.0001){
+			#if DEBUG_LEVEL == 1
+			cout <<"In P_mixEOS main loop; drho_dp==0"<<endl;
+			cout<<"epsilon="<<epsilon<<" rho= "<< rho<< " p= "<<p <<" Rho_MixEOS(T, p+epsilon, Xr)= "<<Rho_MixEOS(T, p+epsilon, Xr)<<endl;
+			cout <<"function input: T= "<<T <<" rho= "<<rho0<<" Pguess ="<<Pguess  <<" Xr= "<<Xr <<endl;
+			#endif
+			epsilon=p*1e-5;
+			drho_dp = (Rho_MixEOS(T, p+epsilon, Xr) - rho) / epsilon;
+			stepsize = alpha * (rho - rho0) / drho_dp;	
+			
+			#if DEBUG_LEVEL == 1
+			cout << "correction"<< endl;
+			cout<<"epsilon="<<epsilon<<" drho_dp= "<< drho_dp<< " stepsize= "<<stepsize <<endl;
+			#endif
+			
+		}
+		
 			while (stepsize>= p) {
-				stepsize=stepsize*0.5;
+				stepsize=stepsize*0.4;
 			}
         p = p -  stepsize;// update p
+		if ( (isnan(p))||(isnan(stepsize))|| (isnan(drho_dp ) ) ){
+			cout <<"Error in P_mixEOS main loop"<<endl;
+			cout<<"rho="<<rho<<" Rho_MixEOS(T, p+epsilon, Xr)=" <<Rho_MixEOS(T, p+epsilon, Xr) <<endl;
+			cout <<"p= "<<p <<" stepsize= "<<stepsize<< " drho_dp= "<<drho_dp <<endl; 
+	
+			cin.ignore();
+		}
         rho =  Rho_MixEOS(T, p, Xr);
+		if (isnan(rho)){
+			cout <<"Error in P_mixEOS main loop; Rho_MixEOS gave wrong output"<<endl;
+			cout<<"rho= "<<rho<<" T = "<<T<<" p= "<<p <<" Xr= "<<Xr<<endl;
+			cout<<"drho_dp= "<<drho_dp<< " = alpha * (rho - rho0) / drho_dp = "<<alpha * (rho - rho0) / drho_dp<<endl<<" stepsize= "<<stepsize<<endl ;
+			
+			cin.ignore();
+		}
 		
-		//if (printDebug==1){
-		#if DEBUG_LEVEL == 1	
+		
+		#if DEBUG_LEVEL == 1
+			//cout<<"im in i ="<<i<<"\n";
 			output_file << i << " | P= "<< p<< " | rhoMix= " << rho << "  | drho_dp= "<< drho_dp << " | abs(rho - rho0) = "<< abs(rho - rho0)  <<" | step = " << alpha * (rho - rho0) / drho_dp<< " tolerance = " <<toll <<"\n"; // write line to file	
 			output_file2 << i <<" "<<abs(rho - rho0) << " "<<alpha * (rho - rho0) / drho_dp<<"\n"; 	
-		//}
+			output_file.flush();
 		#endif
 
 		
@@ -1348,20 +1454,29 @@ double  P_mixEOS(double T, double rho0, double Xr, double Pguess , double epsilo
 			#if DEBUG_LEVEL == 1
 				cout <<"converged after "<< i <<" steps \n";
 			#endif
-			break; 
+			return p;
+			//break; 
 		}
 		if ( (abs(rho - rho0) >resOld) ){
 			alpha=alpha/5.0; 
 			errorflag=errorflag+1;
 			#if DEBUG_LEVEL == 1
 				cout<< "i= "<<i;
-				cout<< " deresing alpha" <<"\n";
+				cout<< " decreasing alpha" <<"\n";
 			#endif
 			if (errorflag>3){
 				if (rho >=min(Rho_MixEOS(T, P_pre_min, Xr), Rho_MixEOS(T, Pmin, Xr) ) && rho <= max( Rho_MixEOS(T, P_pre_min, Xr), Rho_MixEOS(T, Pmin, Xr) )){
 					printline (T,P_pre_min +(rho0-Rho_MixEOS(T, P_pre_min, Xr) ) * (P_pre_min-Pmin)/(Rho_MixEOS(T, P_pre_min, Xr)- Rho_MixEOS(T, Pmin, Xr)  ), rho );
+					#if DEBUG_LEVEL == 1					
+						cout<< " decreasing alpha, return interp" <<"\n";
+						cout << "Pmin= "<< Pmin<<" Rho_MixEOS(T, Pmin, Xr)= "<< Rho_MixEOS(T, Pmin, Xr)<<"\n";
+						cout <<" P_pre_min= " <<P_pre_min<<" Rho_MixEOS(T, P_pre_min, Xr) ="<< Rho_MixEOS(T, P_pre_min, Xr) << "\n rho0= "<<rho0<<"\n";
+					#endif
 					return P_pre_min +(rho0-Rho_MixEOS(T, P_pre_min, Xr) ) * (P_pre_min-Pmin)/(Rho_MixEOS(T, P_pre_min, Xr)- Rho_MixEOS(T, Pmin, Xr) );
 				}else{
+					#if DEBUG_LEVEL == 1					
+						cout<< " decreasing alpha, return Pmin" <<"\n";
+					#endif					
 					printline (T,Pmin,  rho );
 					return Pmin;
 				}
@@ -1373,11 +1488,17 @@ double  P_mixEOS(double T, double rho0, double Xr, double Pguess , double epsilo
 				cout<< " step too small "<<"\n";
 			#endif
 
-			if (rho >=min(Rho_MixEOS(T, P_pre_min, Xr), Rho_MixEOS(T, Pmin, Xr) ) && rho <= max( Rho_MixEOS(T, P_pre_min, Xr), Rho_MixEOS(T, Pmin, Xr) )){
-				printline (T,P_pre_min +(rho0-Rho_MixEOS(T, P_pre_min, Xr) ) * (P_pre_min-Pmin)/(Rho_MixEOS(T, P_pre_min, Xr)- Rho_MixEOS(T, Pmin, Xr)  ), rho );
+			if (rho0 >=min(Rho_MixEOS(T, P_pre_min, Xr), Rho_MixEOS(T, Pmin, Xr) ) && rho0 <= max( Rho_MixEOS(T, P_pre_min, Xr), Rho_MixEOS(T, Pmin, Xr) )){
+				printline (T,P_pre_min +(rho0-Rho_MixEOS(T, P_pre_min, Xr) ) * (P_pre_min-Pmin)/(Rho_MixEOS(T, P_pre_min, Xr)- Rho_MixEOS(T, Pmin, Xr)  ), rho0 );
+				#if DEBUG_LEVEL == 1
+					cout << "small step. return interp"<<"\n";
+				#endif
 				return P_pre_min +(rho0-Rho_MixEOS(T, P_pre_min, Xr) ) * (P_pre_min-Pmin)/(Rho_MixEOS(T, P_pre_min, Xr)- Rho_MixEOS(T, Pmin, Xr) );
 			}else{
 				printline (T,Pmin,  rho );
+				#if DEBUG_LEVEL == 1
+					cout << "small step. return Pmin"<<"\n";
+				#endif				
 				return Pmin;
 			}
 		}
@@ -1395,7 +1516,12 @@ double  P_mixEOS(double T, double rho0, double Xr, double Pguess , double epsilo
 
 		}
     }
-	printline (T,p,  rho );
+	printline (T,p,rho0);
+	cin.ignore(); 
+				#if DEBUG_LEVEL == 1
+					cout << "finished loop. return last p"<<"\n";
+				#endif		
+				
     return p;
 }
 
@@ -1538,14 +1664,44 @@ double  P_mixEOS(double T, double rho0, double Xr, double Pguess , double epsilo
 double Rho_MixEOS(double T, double P, double Xr) {
 	// funtion that calles two rhows and finds mixed rho
 	// formula: 1/rho= Xr/rhor +Xw/rhow 
+	if ( (Xr>1)||(T<0)||(P<0)||(isnan(T) ||isnan(P) )){
+		cout <<"Error in input of Rho_MixEOS !" <<endl;
+		cout <<"T= "<<T <<" P= "<<P<< " Xr= "<<Xr <<endl;
+		cout << "Emergency stop"<<endl;
+		cin.ignore();
+		
+	}
+	if ((P>400000)||(T>100000)){
+		cout <<"Warning: High input for Rho_MixEOS. Using extrapolation!"<<endl;
+		cout <<"T= "<<T <<" P= "<<P<< " Xr= "<<Xr <<endl;
+		cout <<"RhoW(T, P); ="<<Rho_AQUAEOS(T, P) <<endl;
+		cout <<"RhoR(T, P); ="<<Rho_QEOS(T, P) <<endl;
+		
+	}
 	    double	RhoW, RhoR,Xw;
 		Xw=1-Xr;
-		RhoW=Rho_AQUAEOS(T, P); //using guess
-		RhoR=Rho_QEOS(T, P); //using guess
+		RhoW=Rho_AQUAEOS(T, P); 
+		RhoR=Rho_QEOS(T, P); 
+	if ( (RhoR<=0)||(RhoW<=0)||(isnan(RhoW) ||isnan(RhoR) )){
+		cout <<"Error in output of Rho_MixEOS ! input:" <<endl;
+		cout <<"T= "<<T <<" P= "<<P<< " Xr= "<<Xr << " output:"<<endl;
+		cout <<"RhoR= "<<RhoR<<"RhoW= "<<RhoW<<endl;
+
+		cout << "Emergency stop"<<endl;
+		cin.ignore();
+		
+	}		
 		return 1.0 / (Xr/RhoR + Xw/RhoW);	
 }
 
 double Rho_AQUAEOS(double Tlin, double Plin) {
+	if ( (Tlin<0)||(Plin<0)||(isnan(Tlin))||(isnan(Plin) ) ){
+		cout<< "Error in input of Rho_AQUAEOS"<<endl;
+		cout <<"T= "<<Tlin <<" P= "<<Plin <<endl;
+		cout << "Emergency stop"<<endl;
+		cin.ignore();
+				
+	}
 	//input in K, Gpa
 	//cout << " input: T= " <<Tlin << " P = "<<Plin << endl;
     Plin *= 1e9; // from GPa to Pa
@@ -2034,6 +2190,7 @@ if (p00==0) {
     cout << "error in AQUA" << endl;
     cout <<"P= "<< P << endl;
     cout <<"T= "<< T << endl;
+	cout <<"rho= "<<rho<<endl;
 }
   //  cout << " output (Aqua units): rho= " <<rhoLog << endl;
 
@@ -2222,6 +2379,10 @@ double EOS::dTdV_S(double V, double P, double T)
 double P_T(double rho, void *params)
 // pressure at constant T in GPa, density in g/cm^3
 {
+	  if (rho<=0)  {
+		cout<< "in P_T, rho<0"<<endl;
+		cin.ignore(); 
+  }
   struct EOS_params *p = (struct EOS_params *) params;
   
   EOS* Phase = p->Phase;
@@ -2237,7 +2398,11 @@ double P_rho(double T, void *params)
 
   EOS* Phase = p->Phase;
   double rho = p->x[0];
-  
+  if (rho<=0)
+  {
+		cout<< "in P_rho, rho<0"<<endl;
+		cin.ignore(); 
+  }
   return Phase->Press(rho, T);
 }
 
@@ -2337,7 +2502,11 @@ double P_EOS_S(double rho, void *params)
   EOS* Phase = p->Phase;
   double V = Phase->volume(rho);
   double V1 = Phase->volume(rho1);
-  
+  if ((rho<0)||(rho1<0)){
+	  cout<< "error in P_EOS_S"<< endl;
+	  cout <<"rho="<<rho<< endl;
+	  cout <<"rho1="<<rho1<< endl;
+  }
   return Phase->Press(rho, T1+(V-V1)*dTdV) - P2;
 }
 
@@ -2478,8 +2647,8 @@ double EOS::density(double P1, double T1, double rho, double P2, double &T2)
 
     if (!gsl_finite(rho2))
     {
-      if (verbose)
-	cout<<"Warning: Can't find the density for "<<phasetype<<" at pressure "<<P2<<" GPa and temperature "<<T1<<" K, initial guessed density:"<<rho<<". V0, K0, K0p: "<<V0<<' '<<K0<<' '<<K0p<<". Likely no solution exist for this physical condition under the EOS used."<<endl;
+      if (verbose) // !@!@
+	cout<<"aa Warning: Can't find the density for "<<phasetype<<" at pressure "<<P2<<" GPa and temperature "<<T1<<" K, initial guessed density:"<<rho<<". V0, K0, K0p: "<<V0<<' '<<K0<<' '<<K0p<<". Likely no solution exist for this physical condition under the EOS used."<<endl;
       
       gsl_root_fdfsolver_free (s);
       return numeric_limits<double>::quiet_NaN();
@@ -2487,12 +2656,16 @@ double EOS::density(double P1, double T1, double rho, double P2, double &T2)
     else if (status == GSL_CONTINUE)
     {
       if (verbose)
-	cout<<"Warning: Can't find the density for "<<phasetype<<" at pressure "<<P2<<" GPa and temperature "<<T1<<" K within maximum interation "<<max_iter<<", initial guessed density:"<<rho<<". V0, K0, K0p: "<<V0<<' '<<K0<<' '<<K0p<<endl;
+	cout<<"bb Warning: Can't find the density for "<<phasetype<<" at pressure "<<P2<<" GPa and temperature "<<T1<<" K within maximum interation "<<max_iter<<", initial guessed density:"<<rho<<". V0, K0, K0p: "<<V0<<' '<<K0<<' '<<K0p<<endl;
       
       gsl_root_fdfsolver_free (s);
       return numeric_limits<double>::quiet_NaN();
     }
     gsl_root_fdfsolver_free (s);
+	if ((rho2<=0)||(rho1<=0)||(rho<=0)){
+		cout<< "in EOS::density, rho2="<<rho2<<endl;
+		cin.ignore();
+	}
     return rho2;
   }
 }

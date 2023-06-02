@@ -7,8 +7,6 @@ extern EOS *Fe_liquid, *Fe_liquid2, *Fe_fcc, *Fe_bcc, *Fe_hcp, *Fe_hcp2, *Fe_Sea
 
 double dTdP_Si_Dummy (double P, double T);
 // A temperature gradient that equals to the melting curve. Guarantee the temperature won't drop below the melting curve. 
-double dTdP_gas(double P, double T);
-
 double dTdP_QEOS(double P, double T);
 
 

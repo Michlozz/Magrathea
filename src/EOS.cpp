@@ -1,5 +1,6 @@
 #include "EOS.h"
-
+#define DEBUG_LEVEL 0
+double Xr=0.5;
 EOS::EOS():phasetype(""),eqntype(0), V0(numeric_limits<double>::quiet_NaN()), K0(numeric_limits<double>::quiet_NaN()), K0p(numeric_limits<double>::quiet_NaN()), K0pp(numeric_limits<double>::quiet_NaN()), mmol(numeric_limits<double>::quiet_NaN()), P0(0), Theta0(numeric_limits<double>::quiet_NaN()), gamma0(numeric_limits<double>::quiet_NaN()), beta(numeric_limits<double>::quiet_NaN()), gammainf(numeric_limits<double>::quiet_NaN()), gamma0p(numeric_limits<double>::quiet_NaN()), e0(numeric_limits<double>::quiet_NaN()), g(numeric_limits<double>::quiet_NaN()), T0(300), alpha0(numeric_limits<double>::quiet_NaN()), alpha1(0), xi(0), cp_a(numeric_limits<double>::quiet_NaN()), cp_b(0), cp_c(0), at1(numeric_limits<double>::quiet_NaN()), at2(numeric_limits<double>::quiet_NaN()), at3(numeric_limits<double>::quiet_NaN()), at4(numeric_limits<double>::quiet_NaN()), ap1(numeric_limits<double>::quiet_NaN()), ap2(numeric_limits<double>::quiet_NaN()), ap3(numeric_limits<double>::quiet_NaN()), ap4(numeric_limits<double>::quiet_NaN()), n(-1), Z(-1), Debye_approx(false), thermal_type(0), rhotable(NULL), Ptable(NULL), bn(0), acc(NULL), spline(NULL), nline(0)
 {
   density_extern=NULL;
@@ -8,6 +9,8 @@ EOS::EOS():phasetype(""),eqntype(0), V0(numeric_limits<double>::quiet_NaN()), K0
 }
 
 EOS::EOS(string phaseinput, double params[][2], int length):phasetype(phaseinput),eqntype(0), V0(numeric_limits<double>::quiet_NaN()), K0(numeric_limits<double>::quiet_NaN()), K0p(numeric_limits<double>::quiet_NaN()), K0pp(numeric_limits<double>::quiet_NaN()), mmol(numeric_limits<double>::quiet_NaN()), P0(0), Theta0(numeric_limits<double>::quiet_NaN()), gamma0(numeric_limits<double>::quiet_NaN()), beta(numeric_limits<double>::quiet_NaN()), gammainf(numeric_limits<double>::quiet_NaN()), gamma0p(numeric_limits<double>::quiet_NaN()), e0(numeric_limits<double>::quiet_NaN()), g(numeric_limits<double>::quiet_NaN()), T0(300), alpha0(numeric_limits<double>::quiet_NaN()), alpha1(0), xi(0), cp_a(numeric_limits<double>::quiet_NaN()), cp_b(0), cp_c(0), at1(numeric_limits<double>::quiet_NaN()), at2(numeric_limits<double>::quiet_NaN()), at3(numeric_limits<double>::quiet_NaN()), at4(numeric_limits<double>::quiet_NaN()), ap1(numeric_limits<double>::quiet_NaN()), ap2(numeric_limits<double>::quiet_NaN()), ap3(numeric_limits<double>::quiet_NaN()), ap4(numeric_limits<double>::quiet_NaN()), n(-1), Z(-1), Debye_approx(false), thermal_type(0), rhotable(NULL), Ptable(NULL), bn(0), acc(NULL), spline(NULL), nline(0)
+
+
 {
   density_extern=NULL;
   entropy_extern=NULL;
@@ -673,7 +676,7 @@ void EOS::modifyEOS(int index, double value)	     // modify one value of the EOS
     else
       thermal_type = 5;
   }
-  else if (thermal_type!=1 && thermal_type!=2 && thermal_type!=4 && gsl_finite(cp(300)) && gsl_finite(alpha(10,300)) && gsl_finite(T0)) // thermal type not specified and have enough information to calculate using thermal expansion
+  else if (thermal_type!=1 && thermal_type!=2 && thermal_type!=4 && gsl_finite(cp(300)) && gsl_finite(alpha(10,300)) && gsl_finite(T0)) // thermal type not specified and have enough information to calculate using thermal expansionmake
     thermal_type = 9;
   
   if (eqntype >= 8)		// RTpress EOS style
@@ -856,6 +859,21 @@ double EOS::adiabatic_index()	    // get the adiabatic index for ideal gas.  Vib
 double EOS::density(double P, double T, double rho_guess)
 // input P in cgs (microbar), return density in g/cm^3
 {
+	if(eqntype == 5){
+
+
+	//	cout <<"P(microbar)= "<<P<< " T= "<<T<<endl;
+	//	cout <<"Rho_MixEOS( T,  P,  Xr)="<<Rho_MixEOS( T,  P,  Xr) <<endl;
+		//cin.ignore();
+		//cout<<"P_mixEOS(366.5,0.6,0.5 )= "<<P_mixEOS(366.5225269015655,0.6081395638028684, Xr,  P_guesser( 366.522526901565,0.6081395638028684), 0.001, 1.0e-3 )<<endl;
+		//cout<<"10^-10* P_mixEOS(366.5,0.6,0.5 )= "<<1e-10*P_mixEOS(366.5225269015655,0.6081395638028684, Xr,  P_guesser( 366.522526901565,0.6081395638028684), 0.001, 1.0e-3 )<<endl;		
+		//cout <<" Rho_MixEOS( 950,  389 Gpa,  0.5)= "<<endl<<Rho_MixEOS( 959.293392521706, 389.0365558015423*1e10,  0.5)<<endl;		
+	//	cout <<" Rho_MixEOS( 950,  61 Gpa,  0.5)= "<<endl<<Rho_MixEOS( 959.293392521706, 61.2706734252997*1e10,  0.5)<<endl;			
+	 //   cout<<"P_mixEOS(959.29,3.247,0.5 )="<<P_mixEOS(959.293392521706,3.247062234928264, Xr,  P_guesser(959.293392521706,3.247062234928264), 0.5, 1.0e-3 );
+
+	//	cin.ignore();
+		return  Rho_MixEOS( T,  P,  Xr);
+    }
   if(!gsl_finite(P) || !gsl_finite(T)) // Check if P, T, or rho_guess is infinite or nan due to some error.  Stop code to avoid further error.
   {
     if (verbose)
@@ -865,12 +883,14 @@ double EOS::density(double P, double T, double rho_guess)
 
   int status;
   
+ 
   if(P < 0 || P > 1E16)		// unrealistic pressure
     return numeric_limits<double>::quiet_NaN();
 
-  else if(density_extern)
+  else if(density_extern) 
     return density_extern(P, T);
   
+
   else if(eqntype == 7)		// interpolate an input file
   {
 
@@ -956,17 +976,18 @@ double EOS::density(double P, double T, double rho_guess)
     if (!gsl_finite(rho))
     {
       if (verbose)
-	cout<<"Warning: Can't find the density for "<<phasetype<<" at pressure "<<P<<" GPa and temperature "<<T<<" K, initial guessed rho:"<<rho_guess<<". V0, K0, K0p: "<<V0<<' '<<K0<<' '<<K0p<<". Likely no solution exist for this physical condition under the EOS used."<<endl;
+	cout<<"dd Warning: Can't find the density for "<<phasetype<<" at pressure "<<P<<" GPa and temperature "<<T<<" K, initial guessed rho:"<<rho_guess<<". V0, K0, K0p: "<<V0<<' '<<K0<<' '<<K0p<<". Likely no solution exist for this physical condition under the EOS used."<<endl;
       
       gsl_root_fdfsolver_free (s);
       return numeric_limits<double>::quiet_NaN();
     }
     else if (status == GSL_CONTINUE)
     {
-      if (verbose)
-	cout<<"Warning: Can't find the density for "<<phasetype<<" at pressure "<<P<<" GPa and temperature "<<T<<" K within maximum interation "<<max_iter<<", initial guessed rho:"<<rho_guess<<". V0, K0, K0p: "<<V0<<' '<<K0<<' '<<K0p<<endl;
+      if (verbose)/// Im here @1@1
+	cout<<"cc Warning: Can't find the density for "<<phasetype<<" at pressure "<<P<<" GPa and temperature "<<T<<" K within maximum interation "<<max_iter<<", initial guessed rho:"<<rho_guess<<". V0, K0, K0p: "<<V0<<' '<<K0<<' '<<K0p<<endl;
       
       gsl_root_fdfsolver_free (s);
+	    return Rho_MixEOS(T, P, Xr);
       return numeric_limits<double>::quiet_NaN();
     }
 
@@ -1191,13 +1212,25 @@ double EOS::alpha (double P, double T)
   }
   return 1E-6 * alphaP0 * pow(1+K0p*P/K0, -xi);
 }
+//	#if DEBUG_LEVEL == 2
+		
+//		std::ofstream output_file;
+		//output_file.open("outputTPrho.txt");
+		
+//	#endif
+double oldrho=0, oldP=0; 
 
+
+		
 double EOS::Press(double rho, double T)
 // pressure in GPa (Eq. 6, 13, 14) in Wolf&Bower 2018, take density in g/cm^3. For thermal expansion representation, this return the pressure at T0.
 {
+		
+
   double P;
   double V = volume(rho);	// volume in cm^3/mol
-
+ // cout << "geteqntype()= " << geteqntype() << endl;
+  //cin.ignore(); // Ignore any input from the user
   switch(geteqntype())
   {
   case 0:			// BM3
@@ -1224,18 +1257,44 @@ double EOS::Press(double rho, double T)
     P = rho*kb*T/(mmol*mp);
     return P;
   case 5:
-//	cout << "T= "<< T<<"rho= "<< rho <<" \n";
+   cout<<"im here!";
+		//ofstream output_file3;
+		//output_file3.open("outputTPrho.txt");
+	 //@@@@
+		 // if (rho<0){
+			// cout << "P= " << P <<endl;
+			// cout << "rho= " << rho <<endl;
+			// cout << "T= " << T <<endl;
+			// cout << "oldP= " << oldP <<endl;
+			// cout << "oldrho= " << oldrho <<endl;
+			
+		// }
+		// P= P_mixEOS(1200,0.899545, 0.5,  962.259 , 0.001, 1.0e-3 );
+		// cout << "out with P= " << P <<endl;
+		cout<<"P_mixEOS(366.5,0.6,0.5 );"<<P_mixEOS(366.5225269015655,0.6081395638028684, Xr,  P_guesser( 366.522526901565,0.6081395638028684), 0.001, 1.0e-3 );
+		cout<<"P_mixEOS(366.5,0.6,0.5 );"<<P_mixEOS(366.5225269015655,0.6081395638028684, Xr,  P_guesser( 366.522526901565,0.6081395638028684), 0.001, 1.0e-3 );		
+		cin.ignore();
 		
-	P =QEOS(T,rho); 
-//	cout << "P= "<<P << "\n ";	
-//	cout << "P (ideal gas)= "<<rho*kb*T/(mmol*mp)<<" \n";
-//	cout << "kb "<<kb << "\n ";	
-//	cout << "mmol "<<mmol << "\n ";	
-//	cout << "mp "<<mp << "\n ";			
-//	cout << "Press Enter to Continue";
-//	cin.ignore()	;
-	
-	break;
+	 P= P_mixEOS(T,rho, Xr,  P_guesser( T,rho), 0.001, 1.0e-3 );
+	 
+	 
+	 
+	// P= P_mixEOS(1200,715116, 0.5,  962.259 , 0.001, 1.0e-3 );
+	// cout << "out with P= " << P <<endl;
+	 //cout<<"Rho_MixEOS(1200, 668.503, 0.5)"<<Rho_MixEOS(1200, 668.503, 0.5);
+	//cin.ignore();
+	#if DEBUG_LEVEL == 1
+		
+		//cout << "Rho_MixEOS(500, P, 0.5); ="<< Rho_MixEOS(500,  P, 0.5)<<endl;
+		//cin.ignore(); 
+	//	fstream outputFile666("output.txt", std::ios::app)
+	//	outputFile666 << "T= "<<T<<" | P= "<<P<< " | rho= "<<rho <<endl;
+		oldrho=rho;
+		oldP=P;
+		
+	#endif
+
+	return P;
   default:
     cout<<"Error: No such EOS type "<<geteqntype()<<" used in "<<phasetype<<endl;
     P = -1;
@@ -1249,90 +1308,901 @@ double EOS::Press(double rho, double T)
   return P;
 }
 
-double QEOS(double T, double rho) {
-    double P;
-    double p00,p10,p01,p20,p02,p11,p12,p21,p30,p03;
-    T= T*8.61697e-8; // form K to Kev
+void printline( double T, double P, double rho) {
+	
+	 // std::fstream outputFile666("output.txt", std::ios::app); 
+       // if (outputFile666.is_open()) {
+         
+          // outputFile666 <<  "output: T= | " << T << " | P = " << P <<" rho= " << rho <<std::endl; // Add a line to the file
+          // outputFile666.close(); // Close the file
+      // } else {
+        // std::cout << "Failed to open the file." << std::endl;
+      // }
+	//  cout<<"T= | " << T << " | P = " << P <<" rho= " << rho <<endl;
+	 // cin.ignore();  
+}
+
+double P_guesser(double T, double rho){
+		// this funciton calcualtes very rath aproximation  of p as a funciton of T (K) and rho (cgs)
+		// based on AQUA eos
+	if (T<=0 || rho<=0){
+		cout<< "error in Pguess input!"<<endl;
+		cout <<"T= "<<T <<" rho= "<<rho<<endl;
+		cout << "returning P=1 ?"<<endl;
+		cin.ignore();
+		return 1.0;
+	}
+		
+	
+//	double x=log10(T);
+//	double y=log10(rho);
+	double x=T;
+	double y=rho;
+	double p00 =   7.361e+10; 
+	double p10 =  -1.025e+07; 
+	double p01 =  -1.839e+08; 
+	double p20 =       450.2; 
+	double p11 =        7688; 
+	double p02 =   5.082e+04; 
+	double p30 =   -0.008039; 
+	double p21 =     -0.1266; 
+	double p12 =     -0.1066; 
+	double p03 =    -0.06482; 
+	double p40 =   5.856e-08; 
+	double p31 =   1.364e-06; 
+	double p22 =   9.494e-07; 
+	double p13 =    8.31e-07; 
+	double p04 =  -5.977e-07; 
+	double p50 =  -1.338e-13; 
+	double p41 =  -6.083e-12; 
+	double p32 =  -1.317e-12; 
+	double p23 =  -5.488e-12; 
+	double p14 =  -7.273e-13; 
+	double p05 =   4.186e-12;
+    double result = p00 +
+                    p10 * x +
+                    p01 * y +
+                    p20 * pow(x, 2) +
+                    p11 * x * y +
+                    p02 * pow(y, 2) +
+                    p30 * pow(x, 3) +
+                    p21 * pow(x, 2) * y +
+                    p12 * x * pow(y, 2) +
+                    p03 * pow(y, 3) +
+                    p40 * pow(x, 4) +
+                    p31 * pow(x, 3) * y +
+                    p22 * pow(x, 2) * pow(y, 2) +
+                    p13 * x * pow(y, 3) +
+                    p04 * pow(y, 4) +
+                    p50 * pow(x, 5) +
+                    p41 * pow(x, 4) * y +
+                    p32 * pow(x, 3) * pow(y, 2) +
+                    p23 * pow(x, 2) * pow(y, 3) +
+                    p14 * x * pow(y, 4) +
+                    p05 * pow(y, 5);
+					
+		result=result*10; //from Pa to micorbar
+		
+    return result;
+}
+
+
+double  P_mixEOS(double T, double rho0, double Xr, double Pguess , double epsilon, double DeltaRho) {
+	//input in k, micorobar
+	if ( (Xr>1)||(T<0)||(rho0<0)){
+		cout <<"Error in input of P_mixEOS ! returning default;P="<<Pguess <<endl;
+		cout <<"T= "<<T <<" rho= "<<rho0<< " Xr= "<<Xr <<endl;
+		//cin.ignore();
+		return Pguess;
+	}
+
+    double p =Pguess;
+	//double POld= Pguess;
+    double rho = Rho_MixEOS(T, p, Xr);
+	double toll = rho0*DeltaRho; //tollarance 
+    double alpha = 0.1; // step size	
+	int errorflag=0;
+	double resmin=1e100;//, res_pre_min=	1e100; //huge numbers
+	double Pmin=0, P_pre_min=0;
+	double resOld= 1e100;
+	
+
+
+	#if DEBUG_LEVEL == 1
+	ofstream output_file2;
+	ofstream output_file;
+		
+		
+		output_file.open("outputDelta.txt");
+		output_file2.open("resedue.txt");
+		output_file << " P_guess= "<< p  <<"  | tolarance= " <<  toll <<" | rho0= " << rho0 <<"\n"; // write line to file		
+	     output_file.flush();
+	#endif
+
+	for (int i = 0; i < 1e4; i++){
+		
+        double drho_dp = (Rho_MixEOS(T, p+epsilon, Xr) - rho) / epsilon; // gradient approximation
+		//cout << "T= "<<T<< " p= "<< p << " Xr=" << Xr<< " Rho_MixEOS(T, p, Xr)="<< Rho_MixEOS(T, p, Xr) << " stepsize= "<<alpha * (rho - rho0) / drho_dp<<"\n";
+		//cin.ignore();
+		double stepsize = alpha * (rho - rho0) / drho_dp;	
+		if (abs(drho_dp)<=0.0001){
+			#if DEBUG_LEVEL == 1
+			cout <<"In P_mixEOS main loop; drho_dp==0"<<endl;
+			cout<<"epsilon="<<epsilon<<" rho= "<< rho<< " p= "<<p <<" Rho_MixEOS(T, p+epsilon, Xr)= "<<Rho_MixEOS(T, p+epsilon, Xr)<<endl;
+			cout <<"function input: T= "<<T <<" rho= "<<rho0<<" Pguess ="<<Pguess  <<" Xr= "<<Xr <<endl;
+			#endif
+			epsilon=p*1e-5;
+			drho_dp = (Rho_MixEOS(T, p+epsilon, Xr) - rho) / epsilon;
+			stepsize = alpha * (rho - rho0) / drho_dp;	
+			
+			#if DEBUG_LEVEL == 1
+			cout << "correction"<< endl;
+			cout<<"epsilon="<<epsilon<<" drho_dp= "<< drho_dp<< " stepsize= "<<stepsize <<endl;
+			#endif
+			
+		}
+		
+			while (stepsize>= p) {
+				stepsize=stepsize*0.4;
+			}
+        p = p -  stepsize;// update p
+		if ( (isnan(p))||(isnan(stepsize))|| (isnan(drho_dp ) ) ){
+			cout <<"Error in P_mixEOS main loop"<<endl;
+			cout<<"rho="<<rho<<" Rho_MixEOS(T, p+epsilon, Xr)=" <<Rho_MixEOS(T, p+epsilon, Xr) <<endl;
+			cout <<"p= "<<p <<" stepsize= "<<stepsize<< " drho_dp= "<<drho_dp <<endl; 
+	
+			cin.ignore();
+		}
+        rho =  Rho_MixEOS(T, p, Xr);
+		if (isnan(rho)){
+			cout <<"Error in P_mixEOS main loop; Rho_MixEOS gave wrong output"<<endl;
+			cout<<"rho= "<<rho<<" T = "<<T<<" p= "<<p <<" Xr= "<<Xr<<endl;
+			cout<<"drho_dp= "<<drho_dp<< " = alpha * (rho - rho0) / drho_dp = "<<alpha * (rho - rho0) / drho_dp<<endl<<" stepsize= "<<stepsize<<endl ;
+			
+			cin.ignore();
+		}
+		
+		
+		#if DEBUG_LEVEL == 1
+			//cout<<"im in i ="<<i<<"\n";
+			output_file << i << " | P= "<< p<< " | rhoMix= " << rho << "  | drho_dp= "<< drho_dp << " | abs(rho - rho0) = "<< abs(rho - rho0)  <<" | step = " << alpha * (rho - rho0) / drho_dp<< " tolerance = " <<toll <<"\n"; // write line to file	
+			output_file2 << i <<" "<<abs(rho - rho0) << " "<<alpha * (rho - rho0) / drho_dp<<"\n"; 	
+			output_file.flush();
+		#endif
+
+		
+		if (abs(rho - rho0) < toll){
+			#if DEBUG_LEVEL == 1
+				cout <<"converged after "<< i <<" steps \n";
+			#endif
+			return p;
+			//break; 
+		}
+		if ( (abs(rho - rho0) >resOld) ){
+			alpha=alpha/5.0; 
+			errorflag=errorflag+1;
+			#if DEBUG_LEVEL == 1
+				cout<< "i= "<<i;
+				cout<< " decreasing alpha" <<"\n";
+			#endif
+			if (errorflag>3){
+				if (rho >=min(Rho_MixEOS(T, P_pre_min, Xr), Rho_MixEOS(T, Pmin, Xr) ) && rho <= max( Rho_MixEOS(T, P_pre_min, Xr), Rho_MixEOS(T, Pmin, Xr) )){
+					printline (T,P_pre_min +(rho0-Rho_MixEOS(T, P_pre_min, Xr) ) * (P_pre_min-Pmin)/(Rho_MixEOS(T, P_pre_min, Xr)- Rho_MixEOS(T, Pmin, Xr)  ), rho );
+					#if DEBUG_LEVEL == 1					
+						cout<< " decreasing alpha, return interp" <<"\n";
+						cout << "Pmin= "<< Pmin<<" Rho_MixEOS(T, Pmin, Xr)= "<< Rho_MixEOS(T, Pmin, Xr)<<"\n";
+						cout <<" P_pre_min= " <<P_pre_min<<" Rho_MixEOS(T, P_pre_min, Xr) ="<< Rho_MixEOS(T, P_pre_min, Xr) << "\n rho0= "<<rho0<<"\n";
+					#endif
+					return P_pre_min +(rho0-Rho_MixEOS(T, P_pre_min, Xr) ) * (P_pre_min-Pmin)/(Rho_MixEOS(T, P_pre_min, Xr)- Rho_MixEOS(T, Pmin, Xr) );
+				}else{
+					#if DEBUG_LEVEL == 1					
+						cout<< " decreasing alpha, return Pmin" <<"\n";
+					#endif					
+					printline (T,Pmin,  rho );
+					return Pmin;
+				}
+			}
+		}
+		if ( abs(stepsize )< 0.00005*epsilon ){ // the step becomes zero
+			#if DEBUG_LEVEL == 1
+				cout<< "i= "<<i;
+				cout<< " step too small "<<"\n";
+			#endif
+
+			if (rho0 >=min(Rho_MixEOS(T, P_pre_min, Xr), Rho_MixEOS(T, Pmin, Xr) ) && rho0 <= max( Rho_MixEOS(T, P_pre_min, Xr), Rho_MixEOS(T, Pmin, Xr) )){
+				printline (T,P_pre_min +(rho0-Rho_MixEOS(T, P_pre_min, Xr) ) * (P_pre_min-Pmin)/(Rho_MixEOS(T, P_pre_min, Xr)- Rho_MixEOS(T, Pmin, Xr)  ), rho0 );
+				#if DEBUG_LEVEL == 1
+					cout << "small step. return interp"<<"\n";
+				#endif
+				return P_pre_min +(rho0-Rho_MixEOS(T, P_pre_min, Xr) ) * (P_pre_min-Pmin)/(Rho_MixEOS(T, P_pre_min, Xr)- Rho_MixEOS(T, Pmin, Xr) );
+			}else{
+				printline (T,Pmin,  rho );
+				#if DEBUG_LEVEL == 1
+					cout << "small step. return Pmin"<<"\n";
+				#endif				
+				return Pmin;
+			}
+		}
+		if (p<0){
+				cout <<"emergency stop! P<0"<<"\n";
+				cin.ignore(); 
+		}		
+		//POld=p;
+		resOld=abs(rho - rho0);
+		if ( abs(rho - rho0) <= resmin ){
+			//res_pre_min=resmin;
+			P_pre_min=Pmin;
+			resmin=abs(rho - rho0);
+			Pmin=p;
+
+		}
+    }
+	printline (T,p,rho0);
+	cin.ignore(); 
+				#if DEBUG_LEVEL == 1
+					cout << "finished loop. return last p"<<"\n";
+				#endif		
+				
+    return p;
+}
+
+
+
+double Rho_MixEOS(double T, double P, double Xr) {
+	//input in micorbar
+	// funtion that calles two rhows and finds mixed rho
+	// formula: 1/rho= Xr/rhor +Xw/rhow 
+	
+	//P=P*1e-10; //to Gpa //@1@ watch out!
+	
+	if ( (Xr>1)||(T<0)||(P<0)||(isnan(T) ||isnan(P) )){
+		cout <<"Error in input of Rho_MixEOS !" <<endl;
+		cout <<"T= "<<T <<" P= "<<P<< " Xr= "<<Xr <<endl;
+		cout << "Emergency stop"<<endl;
+		cin.ignore();
+		
+		
+	}
+	if ((P>4e15)||(T>100000)){
+		cout <<"Warning: High input for Rho_MixEOS. Using extrapolation!"<<endl;
+		cout <<"T= "<<T <<" P= "<<P<< " Xr= "<<Xr <<endl;
+		cout <<"RhoW(T, P); ="<<Rho_AQUAEOS(T, P) <<endl;
+		cout <<"RhoR(T, P); ="<<Rho_QEOS(T, P) <<endl;
+		
+	}
+	    double	RhoW, RhoR,Xw;
+		Xw=1-Xr;
+		RhoW=Rho_AQUAEOS(T, P); 
+		RhoR=Rho_QEOS(T, P); 
+	//	cout <<"RhoR= "<<RhoR<<"RhoW= "<<RhoW<<endl;
+	//	cout <<"(Xr/RhoR + Xw/RhoW)= "<<(Xr/RhoR + Xw/RhoW)<<endl;
+	if ( (RhoR<=0)||(RhoW<=0)||(isnan(RhoW) ||isnan(RhoR) )){
+		cout <<"Error in output of Rho_MixEOS ! input:" <<endl;
+		cout <<"T= "<<T <<" P= "<<P<< " Xr= "<<Xr << " output:"<<endl;
+		cout <<"RhoR= "<<RhoR<<"RhoW= "<<RhoW<<endl;
+
+		cout << "Emergency stop"<<endl;
+		cin.ignore();
+		
+	}		
+		return 1.0 / (Xr/RhoR + Xw/RhoW);	
+}
+
+double Rho_AQUAEOS(double Tlin, double Plin) {
+	// input in K and and microbar
+
+	if ( (Tlin<0)||(Plin<0)||(isnan(Tlin))||(isnan(Plin) ) ){
+		cout<< "Error in input of Rho_AQUAEOS"<<endl;
+		cout <<"T= "<<Tlin <<" P= "<<Plin <<endl;
+		cout << "Emergency stop"<<endl;
+		cin.ignore();
+				
+	}
+	if ( Tlin<100){
+		cout<< "Warning in input of Rho_AQUAEOS"<<endl;
+		cout <<"T= "<<Tlin<<" , outside the EOS. Using T=100"<<endl;
+		Tlin=100;
+	}
+	
+
+   // Plin *= 1e9; // from GPa to Pa
+     Plin *=0.1;// from microbar to Pa
+	if ( Plin<0.1){
+		cout<< "Warning in input of Rho_AQUAEOS"<<endl;
+		cout <<"P= "<<Plin<<" Pa , outside the EOS. Using P=0.1"<<endl;
+		Plin=0.1;
+	}
+	
+    double P = log10(Plin);
+    double T = log10(Tlin);
+	
+    double rho = NAN;
+    //int linFLG = 0;
+ //   cout << " input (Aqua units): T= " <<T << " P = "<<P << endl;
+    double p00 = 0, p10 = 0, p01 = 0, p20 = 0, p11 = 0, p02 = 0, p30 = 0, p21 = 0, p12 = 0, p03 = 0, p40 = 0, p31 = 0, p22 = 0, p13 = 0, p04 = 0, p50 = 0, p41 = 0, p32 = 0, p23 = 0, p14 = 0, p05 = 0;
+	double x, y;
+	x=T;
+	y=P;
+	
+    bool aboveLine1 = (P > -26.471 * pow(T, 2) + 150.19 * T - 206.1);
+    bool aboveLine2 = (P > -1.0682 * pow(T, 4) + 17.137 * pow(T, 3) - 102.01 * pow(T, 2) + 267.83 * T - 252.75);
+    bool aboveLineAB = (P > -13.285 * pow(T, 3) + 102.28 * pow(T, 2) - 252.5 * T + 204.01);
+    int reg4flg = 0;
+
+    if (aboveLine1 && (T <= 2.43) && (P <= 8.17)) // A
+    {
+        p00 = 2.794;
+        p10 = 0.1732;
+        p01 = 0.0001124;
+        p20 = -0.04267;
+        p11 = -4.571e-05;
+    }
+    if ((aboveLine1 || aboveLine2) && (P <= 8.17) && (T > 2.43) && (T <= 2.71)) // A1
+    {
+        p00 = -4.261;
+        p10 = 5.952;
+        p01 = -0.01192;
+        p20 = -1.216;
+        p11 = 0.00115;
+        p02 = 0.0009103;
+    }
+    if ((aboveLineAB > 0) && (P <= 8.17) && (T <= 2.82) && (T > 2.71)) // A2
+    {
+        p00 = -41.37;
+        p10 = 43.67;
+        p01 = -3.82;
+        p20 = -9.93;
+        p11 = 1.291;
+        p02 = 0.02265;
+    }
+    if ((T <= 2.71) && (!aboveLine1)) // B1
+    {
+        p00 = -3.188;
+        p10 = -0.5929;
+        p01 = 1.001;
+        p20 = -0.07902;
+        p11 = -0.0009546;
+        p02 = 0.0005481;
+    }
+if (T <= 2.81 && T > 2.71 && !aboveLineAB) // B2
+{
+    p00 = 0.868;
+    p10 = -3.499;
+    p01 = 0.9022;
+    p20 = 0.4418;
+    p11 = 0.03184;
+    p02 = 0.00241;
+}
+
+if (T > 2.81 && T <= 3.25 && P < -1.2381 * pow(T, 2) + 9.7711 * T - 10.187) // B3
+{
+    p00 = -2.464;
+    p10 = -1.148;
+    p01 = 1.048;
+    p20 = 0.02678;
+    p11 = -0.01683;
+    p02 = 0.0007109;
+}
+
+if (T > 3.25 && T <= 3.35 && P < -1.2381 * pow(T, 2) + 9.7711 * T - 10.187) // B4
+{
+    p00 = 8.679; // (8.553, 8.805)
+    p10 = -4.485; // (-4.524, -4.447)
+    p01 = -3.669; // (-3.744, -3.594)
+    p11 = 1.447; // (1.424, 1.469)
+    p02 = 0.4196; // (0.4102, 0.429)
+    p12 = -0.1335; // (-0.1363, -0.1306)
+    p03 = 0.001257; // (0.001227, 0.001287)
+}	
+
+if ( (T <= 3.75) && (T > 3.35) && (P < -1.2381*pow(T, 2) + 9.7711*T - 10.187) ) { //B5
+
+if (P > 3.75) {
+                p00 = 0.01413; //(0.01316, 0.01511)
+                p10 = -0.296; //(-0.2979, -0.2941)
+                p01 = 1.623; //(1.621, 1.625)
+                p20 = -0.05786; //(-0.05932, -0.05641)
+                p11 = 0.1294; //(0.1282, 0.1306)
+                p02 = -0.02996; //(-0.03142, -0.02849)
+                p30 = 0.03236; //(0.03027, 0.03445)
+                p21 = -0.03754; //(-0.03921, -0.03588)
+                p12 = 0.0195; //(0.01782, 0.02119)
+                p03 = -0.0009692; //(-0.00304, 0.001102)
+                p40 = 0.001306; //(0.000788, 0.001824)
+                p31 = -0.026; //(-0.02645, -0.02555)
+                p22 = 0.03599; //(0.03554, 0.03644)
+                p13 = -0.01107; //(-0.01154, -0.0106)
+                p04 = -0.008997; //(-0.009516, -0.008477)
+                p50 = -0.005768; //(-0.006362, -0.005174)
+                p41 = 0.00668; //(0.006163, 0.007197)
+                p32 = 0.003481; //(0.002973, 0.003989)
+                p23 = 0.0001127; //(-0.0004005, 0.0006258)
+                p14 = -0.001201; //(-0.001736, -0.0006663)
+                p05 = -0.005141; //(-0.005727, -0.004556)
+       x = (x - 3.553) / 0.1181;
+       y = (y - 6.317) / 1.483;
+   }
+   else
+   {
+	   
+                p00 = -5.341;
+                p10 = -0.08695;
+                p01 = 1.359;
+                p20 = 0.06176;
+                p11 = -0.06896;
+                p02 = 0.02323;
+                p30 = -0.06136;
+                p21 = 0.0959;
+                p12 = -0.05158;
+                p03 = 0.007803;
+                p40 = -0.001382;
+                p31 = 0.0005141;
+                p22 = -0.00809;
+                p13 = 0.006997;
+                p04 = -0.0005287;
+                p50 = 0.005795;
+                p41 = -0.01622;
+                p32 = 0.02178;
+                p23 = -0.0122;
+                p14 = 0.000881;
+                p05 = 0.0007325;
+
+		x = (x - 3.55) / 0.1183;
+		y = (y - 1.372) / 1.373;	   
+   }
+}
+if (T > 3.75 && T <= 3.9 && P < -0.3858 * pow(T, 2) + 4.512 * T - 2.5347) { //B6
+	p00 = -2.934;
+	p10 = -0.03621;
+	p01 = 2.878;
+	p20 = 0.001311;
+	p11 = -0.01117;
+	p02 = 0.0006643;
+	p30 = -0.0004874;
+	p21 = 0.00704;
+	p12 = -0.02717;
+	p03 = 0.06056;
+	p31 = 0.0004619;
+	p22 = -0.003914;
+	p13 = 0.004785;
+	p04 = 0.01941;
+	x = (x - 3.825) / 0.04031;
+	y = (y - 4.036) / 2.912; //11.18 and std 0.399
+}
+if (T > 3.9 && P < -0.3858 * pow(T, 2) + 4.512 * T - 2.5347) { //B7
+
+	p00 = -1.288;
+	p10 = -1.962;
+	p01 = 5.449;
+	p20 = 0.1075;
+	p11 = -1.997;
+	p02 = -0.4678;
+	p21 = 0.2234;
+	p12 = 0.2416;
+	p03 = -0.007573;
+	p22 = -0.03111;
+	p13 = -0.0005944;
+	p04 = 0.0005344;
+	p23 = 0.0008553;
+	p14 = -0.000379;
+	p05 = 6.461e-05;
+}   
+
+
+if (P > 11.83) //C1
+{
+    p00 = 4.301; p10 = -0.009416; p01 = 0.3692; p20 = -0.006416; p11 = 0.0113;
+    p02 = 0.02318; p30 = -0.002028; p21 = 0.008771; p12 = -0.005377; p03 = -0.001204;
+    p40 = -0.0005432; p31 = 0.00269; p22 = -0.004188; p13 = 0.0006328; p04 = -0.0007244;
+    p50 = -0.000137; p41 = -4.564e-05; p32 = -0.001235; p23 = 0.0007373; p14 = 0.0002877;
+    p05 = 4.814e-05;
+    x = (x - 3.5) / 0.8689;
+    y = (y - 13.22) / 0.8043;
+}
+else if (P <= 11.83 && P > (9.003 * pow(T, 4) - 81.988 * pow(T, 3) + 279.25 * pow(T, 2) - 420.9 * T + 245.64) && T < 2.81) //C2
+{
+    p00 = 3.394; p10 = -0.00158; p01 = 0.1796; p20 = -0.0007509; p11 = 0.002232;
+    p02 = 0.0005657; p30 = -0.0002373; p21 = 0.001701; p12 = -0.0005835; p03 = -0.02224;
+    p40 = -0.0001095; p31 = 0.0005192; p22 = -0.0007121; p13 = 5.797e-05; p04 = 0.009211;
+    p50 = 4.605e-06; p41 = 0.0001306; p32 = -0.0003046; p23 = -0.0002056; p14 = -0.0001364;
+    p05 = 0.005902;
+    x = (x - 2.381) / 0.2325;
+    y = (y - 10.56) / 0.7428;
+}
+
+if ((P<=11.83)&&(T<=3.35)&&(P> 5.5834*pow(T,4) - 68.396*pow(T,3) + 310.69*pow(T,2) - 618.37*T + 463.86)&&(T>=2.81)) //C3
+{
+	p00 = 3.535;
+	p10 = -0.002158;
+	p01 = 0.09431;
+	p20 = -0.0009023;
+	p11 = 0.002154;
+	p02 = 0.00352;
+	p21 = 2.74e-05;
+	p12 = -0.001015;
+	p03 = 0.008594;
+	p22 = 0.0003741;
+	p13 = -0.0002965;
+	p04 = 0.002108;
+	x = (x - 3.051) / 0.1538; // 3.051 and std 0.1538
+	y = (y - 11.18) / 0.399; //11.18 and std 0.399
+}
+if ((P<=11.83)&&(P>10.45)&&(T>3.75)) //C4
+{
+	p00 = 3.326;
+	p10 = -0.1155;
+	p01 = 0.1809;
+	p20 = -0.02035;
+	p11 = 0.03136;
+	p02 = -0.00219;
+	p30 = 0.001435;
+	p21 = 0.001197;
+	p12 = 0.0001679;
+	p03 = 0.0003041;
+	p40 = 0.0005927;
+	p31 = -0.002242;
+	p22 = 0.0015;
+	p13 = -0.0005015;
+	x = (x - 4.38) / 0.3608; // mean 4.38 and std 0.3608
+	y = (y - 11.14) / 0.3959; // mean 11.14 and std 0.3959
+}
+if (P<=10.45 && (T>3.9) && (P>= -0.3858*T*T + 4.512*T - 2.5347)) //C5
+{
+    p00 = 2.864;
+    p10 = -0.1374;
+    p01 = 0.1495;
+    p20 = -0.009803;
+    p11 = 0.01471;
+    p02 = -0.007024;
+    p30 = 0.003783;
+    p21 = -0.003452;
+    p12 = 0.0008165;
+    p03 = 0.0005644;
+    p31 = -0.0004699;
+    p22 = 0.0003421;
+    p13 = 0.0003195;
+    p04 = 6.51e-05;
+    p32 = -0.0001348;
+    p23 = 0.0002483;
+    p14 = -0.0003249;
+    p05 = 0.000253;
+
+    x = (x - 4.261) / 0.2694; // 4.261 and std 0.2694
+    y = (y - 10.05) / 0.2919; // 10.05 and std 0.2919
+}
+
+if (P<=10.45 && T<=3.9 && T>=3.75 && P>-0.3858*T*T + 4.512*T - 2.5347) //C6
+{
+    p00 = 2.921;
+    p10 = -0.01531;
+    p01 = 0.1826;
+    p20 = -0.0004291;
+    p11 = 0.003723;
+    p02 = -0.01612;
+    p30 = -3.244e-06;
+    p21 = 8.14e-05;
+    p12 = -0.001205;
+    p03 = 0.004603;
+    p31 = -5.641e-06;
+    p22 = 2.432e-05;
+    p13 = 0.000668;
+    p04 = -0.001128;
+
+    x = (x - 3.823) / 0.04027; // 3.823 and std 0.04027
+    y = (y - 9.764) / 0.3989; // 9.764 and std 0.3989
+}
+if (P <= 11.83 && T < 3.75 && T > 3.35 && P >= -1.2381 * pow(T, 2) + 9.7711 * T - 10.187) { //C7
+      p00 = 3.24;
+      p10 = -0.01657;
+      p01 = 0.265;
+      p20 = -0.005132;
+      p11 = 0.02098;
+      p02 = -0.02605;
+      p30 = -0.002369;
+      p21 = 0.003013;
+      p12 = -0.01378;
+      p03 = 0.03458;
+      p31 = -0.001151;
+      p22 = 0.003333;
+      p13 = 0.0002948;
+      p04 = -0.003777;
+      p32 = 0.00236;
+      p23 = -0.002254;
+      p14 = 0.00112;
+      p05 = -0.002434;
+      x = (x - 3.556) / 0.1127; // 3.556 and std 0.1127
+      y = (y - 10.36) / 0.8498; // 10.36 and std 0.8498
+}
+if ((T>3.0)&&(T<=3.35)&&(P>=-1.2381*pow(T,2) + 9.7711*T - 10.187)&&(P< 5.5834*pow(T,4) - 68.396*pow(T,3) + 310.69*pow(T,2) - 618.37*T + 463.86)) { //C8
+         p00 = 3.057; //(3.057, 3.058)
+         p10 = -0.02485; //(-0.02504, -0.02467)
+         p01 = 0.2136; //(0.2134, 0.2139)
+         p20 = -0.002074; //(-0.002154, -0.001994)
+         p11 = 0.02951; //(0.02933, 0.02969)
+         p02 = -0.02923; //(-0.02944, -0.02902)
+         p30 = 1.454e-05; //(-7.38e-05, 0.0001029)
+         p21 = 0.001657; //(0.001512, 0.001802)
+         p12 = -0.01872; //(-0.01901, -0.01844)
+         p03 = 0.01692; //(0.01664, 0.01721)
+         p31 = 1.108e-05; //(-5.469e-05, 7.685e-05)
+         p22 = 0.00111; //(0.001033, 0.001187)
+         p13 = 0.002147; //(0.002056, 0.002238)
+         p04 = -0.005896; //(-0.005971, -0.00582)
+         p32 = 0.0001517; //(7.338e-05, 0.00023)
+         p23 = -0.001184; //(-0.001284, -0.001083)
+         p14 = 0.001556; //(0.001441, 0.00167)
+         p05 = 0.00133; //(0.001247, 0.001413)
+       x=(x-3.171)/0.09773; //3.171 and std 0.09773
+       y=(y-9.536)/0.7075; //9.536 and std 0.7075     
+}
+if ((T>2.81)&&(T<=3.0)&&(P>=-1.2381*pow(T,2) + 9.7711*T - 10.187)&&(P< 5.5834*pow(T,4) - 68.396*pow(T,3) + 310.69*pow(T,2) - 618.37*T + 463.86)) { //C9
+         p00 = 3; //(3, 3.001)
+         p10 = -0.01957; //(-0.02048, -0.01865)
+         p01 = 0.1627; //(0.1618, 0.1636)
+         p20 = -0.002044; //(-0.002755, -0.001332)
+         p11 = 0.01685; //(0.01621, 0.01749)
+         p02 = -0.001894; //(-0.002597, -0.00119)
+         p30 = -0.001173; //(-0.002223, -0.0001223)
+         p21 = 0.004752; //(0.003868, 0.005637)
+         p12 = -0.01165; //(-0.01265, -0.01065)
+         p03 = 0.006814; //(0.005787, 0.00784)
+         p40 = -0.0004157; //(-0.0006718, -0.0001597)
+         p31 = -0.001004; //(-0.00124, -0.0007685)
+         p22 = 0.0005406; //(0.0002834, 0.0007978)
+         p13 = 0.01852; //(0.01822, 0.01881)
+         p04 = -0.01631; //(-0.01657, -0.01605)
+         p50 = 0.0002879; //(-1.704e-05, 0.0005929)
+         p41 = 0.0005869; //(0.000312, 0.0008617)
+         p32 = 0.001409; //(0.001115, 0.001703)
+         p23 = -0.002036; //(-0.002372, -0.0017)
+         p14 = -0.009735; //(-0.01012, -0.009352)
+         p05 = 0.008759; //(0.008457, 0.009061)
+       x=(x-2.91)/0.05485; //2.91 and std 0.05485
+       y=(y-9.017)/0.7393; //9.017 and std 0.7393  
+}
+if ((P>8.17)&&(P<=9.003*pow(T,4) - 81.988*pow(T,3) + 279.25*pow(T,2) - 420.9*T+ 245.64)&&(T<2.81)) { //triple point region
+    int otherflg=1;
+    if ((P<=8.18)&&(T<=2.22)) { //add to region a1
+               p00 =      -4.261  ;
+               p10 =       5.952  ;
+               p01 =    -0.01192  ;
+               p20 =      -1.216  ;
+               p11 =     0.00115  ;
+               p02 =   0.0009103  ;
+               otherflg=0;
+    }
+    if ((P< -21.532*pow(T,3) + 148.41*pow(T,2) - 340.08*T + 267.34)&&(T>2.22)&&(T<2.4)) { //add to region a1
+               p00 =      -4.261  ;
+               p10 =       5.952  ;
+               p01 =    -0.01192  ;
+               p20 =      -1.216  ;
+               p11 =     0.00115  ;
+               p02 =   0.0009103  ;
+               otherflg=0;
+    }
+    if ((T>=2.4)&& (P< -607.22*pow(T,2) + 2912.5*T - 3484)) { //add to region a1
+               p00 =      -4.261  ;
+               p10 =       5.952  ;
+               p01 =    -0.01192  ;
+               p20 =      -1.216  ;
+               p11 =     0.00115  ;
+               p02 =   0.0009103  ;
+               otherflg=0;
+    }
+    if ((T>2.4)&&(P< -12.514*pow(T,2) + 67.481*T - 81.378)) { //prob4 - 1
+       p00 =       3.046  ;//(3.046, 3.046)
+       p10 =    -0.02306  ;//(-0.02308, -0.02305)
+       p01 =      0.0523  ;//(0.05229, 0.05232)
+       p20 =   -0.003779  ;//(-0.003798, -0.003761)
+       p11 =    0.007491  ;//(0.00747, 0.007512)
+       p02 =    0.008425  ;//(0.008409, 0.008441)
+       p30 =  -0.0006698  ;//(-0.0006796, -0.0006601)
+       p21 =    0.003463  ;//(0.003449, 0.003477)
+       p12 =   -0.001183  ;//(-0.001198, -0.001167)
+       p03 =  -0.0003367  ;//(-0.0003471, -0.0003262)
+       p40 =   -0.000185  ;//(-0.000192, -0.000178)
+       p31 =    0.000936  ;//(0.0009243, 0.0009478)
+       p22 =   -0.001465  ;//(-0.00148, -0.001451)
+       p13 =   0.0003629  ;//(0.0003495, 0.0003762)
+       p04 =  -4.152e-05  ;//(-4.77e-05, -3.533e-05)
+           x=(x- 2.646 )/0.1105; //  2.646 and std 0.1105
+           y=(y- 8.838)/0.433 ;  //  8.838 and std 0.433 
+           reg4flg=1;
+           otherflg=0;
+
+    }
+    if ((T>=2.68)&&(reg4flg==0)) { //prob4 - 2
+       
+       p00 =       3.046  ;//(3.046, 3.046)
+       p10 =    -0.02306  ;//(-0.02308, -0.02305)
+       p01 =      0.0523  ;//(0.05229, 0.05232)
+       p20 =   -0.003779  ;//(-0.003798, -0.003761)
+       p11 =    0.007491  ;//(0.00747, 0.007512)
+       p02 =    0.008425  ;//(0.008409, 0.008441)
+       p30 =  -0.0006698  ;//(-0.0006796, -0.0006601)
+       p21 =    0.003463  ;//(0.003449, 0.003477)
+       p12 =   -0.001183  ;//(-0.001198, -0.001167)
+       p03 =  -0.0003367  ;//(-0.0003471, -0.0003262)
+       p40 =   -0.000185  ;//(-0.000192, -0.000178)
+       p31 =    0.000936  ;//(0.0009243, 0.0009478)
+       p22 =   -0.001465  ;//(-0.00148, -0.001451)
+       p13 =   0.0003629  ;//(0.0003495, 0.0003762)
+       p04 =  -4.152e-05  ;//(-4.77e-05, -3.533e-05)
+           x=(x- 2.646 )/0.1105; //  2.646 and std 0.1105
+           y=(y- 8.838)/0.433 ;  //  8.838 and std 0.433
+           otherflg=0;
+    }
+	if (((P>3.9155*pow(T,3) - 26.102*pow(T,2) + 57.565*T - 33.101)&&(T<2.41) ) || ((P>= -12.514*pow(T,2) + 67.481*T - 81.378)&&(T>=2.41)&&(T<2.68))) { //prob5
+         p00 =       3.141 ;//(3.141, 3.141)
+         p10 =   -0.003927 ;//(-0.003984, -0.003871)
+         p01 =     0.00657 ;//(0.006506, 0.006635)
+         p20 =   -0.001098 ;//(-0.001136, -0.00106)
+         p11 =   0.0005272 ;//(0.0004633, 0.0005911)
+         p02 =   0.0005593 ;//(0.0005096, 0.000609)
+         p30 =  -0.0001789 ;//(-0.0002144, -0.0001434)
+         p21 =    7.68e-05 ;//(6.062e-06, 0.0001475)
+         p12 =   2.701e-05 ;//(-5.154e-05, 0.0001056)
+         p03 =   2.437e-05 ;//(-1.754e-05, 6.629e-05)
+         p31 =  -4.894e-05 ;//(-9.034e-05, -7.544e-06)
+         p22 =   -1.85e-05 ;//(-8.825e-05, 5.125e-05)
+         p13 =  -8.868e-06 ;//(-6.103e-05, 4.33e-05)
+         p04 =   8.046e-06 ;//(-1.125e-05, 2.734e-05)
+           x=(x- 2.326 )/0.1203; //  2.326 and std 0.1203
+           y=(y- 9.049)/0.1139  ;  // 9.049 and std 0.1139     
+           otherflg=0;
+    }
+    if (otherflg==1) {
+         p00 =      -4.112 ;//(-4.633, -3.591)
+         p10 =      0.2761 ;//(0.1127, 0.4396)
+         p01 =       2.608 ;//(2.447, 2.77)
+         p20 =      0.1004 ;//(0.06525, 0.1355)
+         p11 =       -0.11 ;//(-0.1373, -0.08273)
+         p02 =     -0.3121 ;//(-0.3297, -0.2945)
+         p30 =    -0.03736 ;//(-0.04133, -0.03338)
+         p21 =     0.01356 ;//(0.01113, 0.01598)
+         p12 =    0.003287 ;//(0.001895, 0.00468)
+         p03 =     0.01279 ;//(0.01213, 0.01345)        
+    }
+}
+
+     double rhoLog = p00 + p10*x + p01*y + p20*pow(x,2) + p11*x*y + p02*pow(y,2) + p30*pow(x,3) + p21*pow(x,2)*y  
+         + p12*x*pow(y,2) + p03*pow(y,3) + p40*pow(x,4) + p31*pow(x,3)*y + p22*pow(x,2)*pow(y,2)
+         + p13*x*pow(y,3) + p04*pow(y,4) + p50*pow(x,5) + p41*pow(x,4)*y + p32*pow(x,3)*pow(y,2)
+         + p23*pow(x,2)*pow(y,3) + p14*x*pow(y,4) + p05*pow(y,5);
+
+
+// cout << "p00: " << p00 << endl;
+// cout << "p10: " << p10 << endl;
+// cout << "p01: " << p01 << endl;
+// cout << "p20: " << p20 << endl;
+// cout << "p11: " << p11 << endl;
+// cout << "p02: " << p02 << endl;
+// cout << "p30: " << p30 << endl;
+// cout << "p21: " << p21 << endl;
+// cout << "p12: " << p12 << endl;
+// cout << "p03: " << p03 << endl;
+// cout << "p40: " << p40 << endl;
+// cout << "p31: " << p31 << endl;
+// cout << "p22: " << p22 << endl;
+// cout << "p13: " << p13 << endl;
+// cout << "p04: " << p04 << endl;
+// cout << "p50: " << p50 << endl;
+// cout << "p41: " << p41 << endl;
+// cout << "p32: " << p32 << endl;
+// cout << "p23: " << p23 << endl;
+// cout << "p14: " << p14 << endl;
+// cout << "p05: " << p05 << endl;
+					
+
+if (p00==0) {
+    cout << "error in AQUA" << endl;
+    cout <<"P= "<< P << endl;
+    cout <<"T= "<< T << endl;
+	cout <<"rho= "<<rho<<endl;
+}
+   //  cout << " output (Aqua units): rho= " <<rhoLog << endl;
+
+    rho= pow(10,rhoLog); //to lin
+	//cout << "  rho(kg/m3)= " <<rho<< endl;
+	rho=rho*0.001 ;//in gr/cm^3
+   //  cout << " output (cgs): rho= " <<rho << endl;
+	// cout<< "p00="<<p00<<endl;
+	// cin.ignore(); // Ignore any input from the user	
+	 return rho;
+	 
+}
+
+double Rho_QEOS(double T, double P) {
+ // input in : K, microbar
+    double p00 = 0, p10 = 0, p01 = 0, p20 = 0, p11 = 0, p02 = 0, p30 = 0, p21 = 0, p12 = 0, p03 = 0, p40 = 0, p31 = 0, p22 = 0, p13 = 0, p04 = 0, rho = NAN;
+	double x, y;
+ //cout << "geteqntype()= " << geteqntype() << endl;
+ // cout << " input: P= " <<P << " T = "<<T << endl;
+
+ 
+  	T= T*8.61697e-8; // form K to Kev
     T=log10(T); //to Log
-    rho=log10(rho);//(assuming cgs) to Log
-    
-    if (rho<=0.4 && T<4.2){ //region 1
-        p00=-8.773;
-        p10=4.017;
-        p01=0;
-        p20=0.4632;
-        p11=0;
-        p02=0;
-        p30=0.02391;
-        p21=0;
-        p12=0;
-        p03 = 0;
-    }
-    if (rho>0.4){ //region 2
-       p00 =      0.1553;
-       p10 =       3.622;
-       p01 =      0.4699;
-       p20 =      0.5747;
-       p11 =       -1.88;
-       p02 =      -0.975;
-       p30 =     0.03134;
-       p21 =     -0.1292;
-       p12 =      0.2801;
-       p03 =      0.4024;
-
-    }
-    if (rho<=0.4 && T>=-4.2 && T<=-3.0){ //region 3 
-        p00=3;
-        if (rho> 6.7*T*T*T+61.95*T*T +192.2*T +199.6) ///region 3a
-         {
-            p00 =       132.2;
-            p10 =         138;
-            p01 =       4.975;
-            p20 =       46.53;
-            p11 =       2.151;
-            p02 =      0.1717;
-            p30 =       5.282;
-            p21 =      0.2285;
-            p12 =     0.04218;
-            p03 =  -0.0002741;
-
-         }   
-         else{ ///region 3b
-            p00 =     -0.9329;
-            p10 =       1.467;
-            p01 =      0.9625;
-            p20 =      0;
-            p11 =      0;
-            p02 =      0;
-            p30 =      0;
-            p21 =      0;
-            p12 =      0;
-            p03 =      0;
-            
-         }   
+	//P=P*1e-6; //to PPa
+	P= P*1e-16;//to PPa
+	P=log10(P); //to Log
+ // cout << " Attay Units: P= " <<P << " T = "<<T << endl;	
+ // cin.ignore(); // Ignore any input from the user	
+  if (P >= -4.8 && (P > -0.6836 * pow(T, 4) - 5.7785 * pow(T, 3) - 17.732 * pow(T, 2) - 21.736 * T - 11.52)) {
+        if (T <= -2.6) { //A1
+            p00 = 2.233;
+            p10 = -0.0359;
+            p01 = 0.5274;
+            p20 = -0.009718;
+            p11 = 0.01016;
+            p02 = 0.007094;
+            p30 = -0.0008563;
+            p21 = 0.00142;
+            p12 = -0.0008899;
+            p03 = -0.003685;
         }
-   if (T>-3 && rho<=0.4) {//region 4
-            p00 =      -1.364;
-            p10 =       0.9002;
-            p01 =      0.9935;
-            p20 =      -0.2522;
-            p11 =      0.05099;
-            p02 =      -0.003507;
-            p30 =      -0.03374;
-            p21 =      0.009997;
-            p12 =      -0.0004553;
-            p03 =      0;
+        else { //A2
+            p00 = 1.609;
+            p10 = -1.037;
+            p01 = 1.389;
+            p20 = -0.4969;
+            p11 = 1.238;
+            p02 = -0.2777;
+            p30 = -0.07421;
+            p21 = 0.6532;
+            p12 = -0.394;
+            p03 = 0.08212;
+            p31 = 0.1228;
+            p22 = -0.121;
+            p13 = 0.04475;
+            p04 = -0.004055;
+        }
     }
-    P= p00 + p10*T + p01*rho + p20*T*T + p11*T*rho + p02*rho*rho +p21*T*T *rho  +   p12*T*rho*rho + p30*T*T*T+ p03*rho*rho*rho;
-//	cout<< "Inside (preconvert) T= "<< T <<" rho= "<<rho << " P= "<<P <<"\n";	
-    P= pow(10.0,P); // in jrk/cc (=1 petapascal)
-    P= P* 1e16; // to cgs (dynes * cm^-2)
-//	cout <<" P (post convert) = "<< P <<"\n";
-//	cout << "Press Enter to Continue";
-//	cin.ignore();
+    else {
+        if (P <= -0.6836 * pow(T, 4) - 5.7785 * pow(T, 3) - 17.732 * pow(T, 2) - 21.736 * T - 11.52) { //reg B
+            p00 = 1.131;
+            p10 = -1.237;
+            p01 = 1.005;
+            p20 = 0.07896;
+            p11 = -0.0125;
+        }
+        else { //reg C
+            p00 = 0.5057;
+            p10 = -0.01474;
+            p01 = 0.009411;
+            p20 = -0.001885;
+            p11 = 0.0005793;
 
-	return P;
+            if (P - (-0.6836 * pow(T, 4) - 5.7785 * pow(T, 3) - 17.732 * pow(T, 2) - 21.736 * T - 11.52) < 0.0666) { //small patch - jump to region B
+                p00 = 1.253;
+                p10 = -1.314;
+                p01 = 1.051;
+                p20 = 0.09291;
+                p11 = -0.02485;
+                p02 = 0.003414;
+            }
+        }
+    }
+
+    x = T;
+    y = P;
+    rho =  p00 + p10*x + p01*y + p20*pow(x,2) + p11*x*y + p02*pow(y,2) + p30*pow(x,3)
+            + p21*pow(x,2)*y + p12*x*pow(y,2) + p03*pow(y,3) + p40*pow(x,4) + p31*pow(x,3)*y
+            + p22*pow(x,2)*pow(y,2) + p13*x*pow(y,3) + p04*pow(y,4); //in log
+//	cout <<  "result:"<< endl;
+//	cout << " Attay Units, pre log: rho= " <<rho << endl;
+	rho=pow(10,rho); //in gr/cm^3
+//	cout << " cgs: rho= " <<rho << endl;
+//	  cin.ignore(); // Ignore any input from the user	
+
+if (P <= 0.0937*pow(T,2) + 2.1263*T - 11.9835) {
+    rho = NAN;
+    // cout << "out" << endl;
+}
+
+	return rho;
 }  
+
+
 
 double S_T(double V, void *params)
 // entropy at constant T, volume in cm^3/mol
@@ -1420,6 +2290,10 @@ double EOS::dTdV_S(double V, double P, double T)
 double P_T(double rho, void *params)
 // pressure at constant T in GPa, density in g/cm^3
 {
+	  if (rho<=0)  {
+		cout<< "in P_T, rho<0"<<endl;
+		cin.ignore(); 
+  }
   struct EOS_params *p = (struct EOS_params *) params;
   
   EOS* Phase = p->Phase;
@@ -1435,7 +2309,11 @@ double P_rho(double T, void *params)
 
   EOS* Phase = p->Phase;
   double rho = p->x[0];
-  
+  if (rho<=0)
+  {
+		cout<< "in P_rho, rho<0"<<endl;
+		cin.ignore(); 
+  }
   return Phase->Press(rho, T);
 }
 
@@ -1535,7 +2413,11 @@ double P_EOS_S(double rho, void *params)
   EOS* Phase = p->Phase;
   double V = Phase->volume(rho);
   double V1 = Phase->volume(rho1);
-  
+  if ((rho<0)||(rho1<0)){
+	  cout<< "error in P_EOS_S"<< endl;
+	  cout <<"rho="<<rho<< endl;
+	  cout <<"rho1="<<rho1<< endl;
+  }
   return Phase->Press(rho, T1+(V-V1)*dTdV) - P2;
 }
 
@@ -1676,8 +2558,8 @@ double EOS::density(double P1, double T1, double rho, double P2, double &T2)
 
     if (!gsl_finite(rho2))
     {
-      if (verbose)
-	cout<<"Warning: Can't find the density for "<<phasetype<<" at pressure "<<P2<<" GPa and temperature "<<T1<<" K, initial guessed density:"<<rho<<". V0, K0, K0p: "<<V0<<' '<<K0<<' '<<K0p<<". Likely no solution exist for this physical condition under the EOS used."<<endl;
+      if (verbose) // !@!@
+	cout<<"aa Warning: Can't find the density for "<<phasetype<<" at pressure "<<P2<<" GPa and temperature "<<T1<<" K, initial guessed density:"<<rho<<". V0, K0, K0p: "<<V0<<' '<<K0<<' '<<K0p<<". Likely no solution exist for this physical condition under the EOS used."<<endl;
       
       gsl_root_fdfsolver_free (s);
       return numeric_limits<double>::quiet_NaN();
@@ -1685,14 +2567,16 @@ double EOS::density(double P1, double T1, double rho, double P2, double &T2)
     else if (status == GSL_CONTINUE)
     {
       if (verbose)
-	cout<<"Warning: Can't find the density for "<<phasetype<<" at pressure "<<P2<<" GPa and temperature "<<T1<<" K within maximum interation "<<max_iter<<", initial guessed density:"<<rho<<". V0, K0, K0p: "<<V0<<' '<<K0<<' '<<K0p<<endl;
+	cout<<"bb Warning: Can't find the density for "<<phasetype<<" at pressure "<<P2<<" GPa and temperature "<<T1<<" K within maximum interation "<<max_iter<<", initial guessed density:"<<rho<<". V0, K0, K0p: "<<V0<<' '<<K0<<' '<<K0p<<endl;
       
       gsl_root_fdfsolver_free (s);
       return numeric_limits<double>::quiet_NaN();
     }
     gsl_root_fdfsolver_free (s);
+	if ((rho2<=0)||(rho1<=0)||(rho<=0)){
+		cout<< "in EOS::density, rho2="<<rho2<<endl;
+		cin.ignore();
+	}
     return rho2;
   }
-  
-
 }

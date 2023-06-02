@@ -185,11 +185,6 @@ double Si_Pv_array[][2] = {{0,2}, {1,25.206}, {2,230.05}, {3,4.142}, {5,mMg+mSi+
 
 EOS *Si_Pv = new EOS("Brg (Oganov)", Si_Pv_array, sizeof(Si_Pv_array)/2/sizeof(Si_Pv_array[0][0]));
 
-double Si_QEOS_array[][2] = {{0,5}, {1, 40}, {5, mSi}};
-EOS *Si_QEOS = new EOS("Si (QEOS)", Si_QEOS_array, sizeof(Si_QEOS_array)/2/sizeof(Si_QEOS_array[0][0]));
-
-//Si_Pv->modify_dTdP(dTdP_gas);//@@@
-
 // ---------------------------------
 // Bridgmanite/Perovskite, MgSiO3, Shim & Duffy 2000, American Mineralogist
 
@@ -234,6 +229,12 @@ EOS *Si_PREM = new EOS("Si (PREM)", "./tabulated/SiPREM.txt");
 // Silicate PREM BM2 extrapolation used in Zeng 2016
 double Si_BM2fit_array[][2] = {{0,0}, {1,25.223}, {2,206},{3,4},{5,mMg+mSi+3*mO}};
 EOS *Si_BM2fit = new EOS("Si (PREM, Zeng)", Si_BM2fit_array, sizeof(Si_BM2fit_array)/2/sizeof(Si_BM2fit_array[0][0]));
+
+// -----------------------------------
+
+double Si_QEOS_array[][2] = {{0,5}, {1, 27.36}, {5, mSi+2*mO}};
+EOS *Si_QEOS = new EOS("Si (QEOS)", Si_QEOS_array, sizeof(Si_QEOS_array)/2/sizeof(Si_QEOS_array[0][0]));
+
 
 // -----------------------------------
 // Silicate, Seager et al. 2007 ApJ 669:1279, tabulate EOS
@@ -467,13 +468,13 @@ double dTdP_gas(double P, double T)
 }
 
 double dTdP_QEOS(double P, double T)
-// return the adiabatic temperature gradient at given pressure and temperature point for rock
+// return the adiabatic temperature gradient at given pressure and temperature point for ideal gas.
 {
   if (P != 0)
-    return 716.49 - 0.466*T + 0.00012 *(T*T);
+    return 2.*T / (7.*P);
   else
   {
-    cout<<"Error: negative P!"<<endl;
+    cout<<"Error: Can't get adiabatic temperature gradient for diatomic gas at P=0."<<endl;
     return numeric_limits<double>::quiet_NaN();
   }
 }
