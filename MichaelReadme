@@ -2,7 +2,7 @@ PRERUN:
 
 module load gsl
 
-COMPLIE:
+COMPLIE by:
 
 make
 
