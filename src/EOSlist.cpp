@@ -474,7 +474,7 @@ double dTdP_QEOS(double P, double T)
     return 2.*T / (7.*P);
   else
   {
-    cout<<"Error: Can't get adiabatic temperature gradient gas at P=0."<<endl;
+    cout<<"Error: Can't get adiabatic temperature gradient at P=0."<<endl;
     return numeric_limits<double>::quiet_NaN();
   }
 }
