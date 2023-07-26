@@ -156,7 +156,15 @@ For RTpress style of EOS, also need a _b array. They are fitted polynomial param
 double P_EOS(double rho, void *params);
 double dP_EOS(double rho, void *params);
 void PdP_EOS(double rho, void *params, double *P, double *dP);
-double QEOS(double T, double rho, int size);
+double Rho_QEOS(double T, double rho);
+double Rho_AQUAEOS(double T, double rho);
+//double Rho_MixEOS(double rhor, double rhow, double Xr, double Xw);
+double P_mixEOS(double T, double rho, double Xr, double Pguess, double epsilon, double DeltaRho  );
+double Rho_MixEOS(double T, double P, double Xr);
+double P_guesser(double T, double rho);
+double dTdP_QEOS(double P, double T);
+
+void printline( double T, double P, double rho) ;
 struct EOS_params
 {
   vector<double> x;

@@ -67,6 +67,7 @@ int derivs_m2(double x, const double y[], double dydx[], void * params)
   EOS *Phase = p -> Phase;
   double Mtot = accumulate(M.begin(), M.end(), 0.0) * ME;
 
+
   rho = Phase -> density(y[1], y[2], rho);
   if (!gsl_finite(rho)) 
   {
@@ -86,15 +87,22 @@ int derivs_m2(double x, const double y[], double dydx[], void * params)
     dydx[2] = 0;
   else if (thermal ==2)
     dydx[2] = Phase->dTdP(y[1], y[2])*dydx[1];
-  else
+  else{
     dydx[2] = -Phase->dTdm(Mtot-x, y[0], rho, y[1], y[2]);
-  
+      }
   p -> x[0] = rho;
-  
+ 
   if (!gsl_finite(dydx[0]) || !gsl_finite(dydx[1]) || !gsl_finite(dydx[2]))
   {
     if (verbose)
     {
+      cout <<"x="<<x<<endl;
+      cout<<"y[0]="<<y[0]<<endl;
+      cout<<"dydx[0]="<<dydx[0]<<endl;
+      cout<<"dydx[1]="<<dydx[1]<<endl;
+      cout<<"dydx[2]="<<dydx[2]<<endl;   
+      cout<<"thermal="<<thermal<<endl;   
+       cin.ignore();      
       cout<<"Warning: Derivative not finite. Can't find density for "<<Phase->getEOS()<<" when performing outside-in integral against m at location: r="<<y[0]<<"cm, m="<<(Mtot-x)/ME<<"MEarth, P="<<y[1]/1E10<<"GPa, T="<<y[2]<<"K, Component masses ";
       for (int i=0; i < int(p -> M.size()); i++)
 	cout<<p -> M[i]<<' ';
@@ -1613,6 +1621,7 @@ hydro* Rloop(vector<PhaseDgm> &Comp, vector<double> M_Comp, vector<double> ave_r
 
   gsl_root_fsolver_free (s);
 
+  Rp = R_hi;
   hydro *temp=new hydro(R_hi, Comp, M_Comp, Tgap, ode_eps_rel0, P0, isothermal); // Need the branch of solution that does not diverge at the center to get the central pressure and temperature
 
   Pc = temp -> getPc() * sqrt(1 + temp -> getRc() / Rp); // Make a correction to the pressure

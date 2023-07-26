@@ -1,0 +1,11 @@
+load module:
+module load gcc gsl
+
+configurations:
+
+gsl-config --libs
+-L/opt/apps/spack/linux-centos7-x86_64/gcc/10.3.0/gsl-2.7-t7jnjnv7/lib -lgsl -lgslcblas -lm
+
+gsl-config --cflags
+-I/opt/apps/spack/linux-centos7-x86_64/gcc/10.3.0/gsl-2.7-t7jnjnv7/include
+
