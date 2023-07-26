@@ -26,7 +26,8 @@ int main()
   gsl_set_error_handler_off();  //Dismiss the abortion from execution, which is designed for code testing.
   hydro* planet;
   ifstream fin;
-  Si_QEOS->modify_dTdP(dTdP_QEOS);
+  //Si_QEOS->modify_dTdP(dTdP_QEOS);
+  Si_QEOS->modify_extern_entropy(S_Mix);
 
   int input_mode=0;
   // Choose between the 8 available input_mode values:
@@ -42,7 +43,7 @@ int main()
     vector<PhaseDgm> Comp = {Fe, Si, water, atm};
     vector<double> Tgap = {0, 0, 0, 300};
     // The temperature of the outer boundary of the inner component minus the inner boundary of the outer component.  A positive number indicates temperature increases inward.  0 indicates the temperature is continuous at the boundary of components.  The last number is the planetary surface temperature.
-    vector<double> Mcomp =  {1.0,2.0,1.0,0.0001}; // Mass in Earth Masses of Core, Mantle, Hydrosphere, Atmosphere
+    vector<double> Mcomp =  {0.5,1.0,0.5,0.0000}; // Mass in Earth Masses of Core, Mantle, Hydrosphere, Atmosphere
     planet=fitting_method(Comp, Mcomp, Tgap, ave_rho, P_surface, false);
     cout<<count_shoot<<' '<<count_step<<endl;
     if (!planet)

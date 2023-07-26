@@ -862,16 +862,6 @@ double EOS::density(double P, double T, double rho_guess)
 	if(eqntype == 5){
 
 
-	//	cout <<"P(microbar)= "<<P<< " T= "<<T<<endl;
-	//	cout <<"Rho_MixEOS( T,  P,  Xr)="<<Rho_MixEOS( T,  P,  Xr) <<endl;
-		//cin.ignore();
-		//cout<<"P_mixEOS(366.5,0.6,0.5 )= "<<P_mixEOS(366.5225269015655,0.6081395638028684, Xr,  P_guesser( 366.522526901565,0.6081395638028684), 0.001, 1.0e-3 )<<endl;
-		//cout<<"10^-10* P_mixEOS(366.5,0.6,0.5 )= "<<1e-10*P_mixEOS(366.5225269015655,0.6081395638028684, Xr,  P_guesser( 366.522526901565,0.6081395638028684), 0.001, 1.0e-3 )<<endl;		
-		//cout <<" Rho_MixEOS( 950,  389 Gpa,  0.5)= "<<endl<<Rho_MixEOS( 959.293392521706, 389.0365558015423*1e10,  0.5)<<endl;		
-	//	cout <<" Rho_MixEOS( 950,  61 Gpa,  0.5)= "<<endl<<Rho_MixEOS( 959.293392521706, 61.2706734252997*1e10,  0.5)<<endl;			
-	 //   cout<<"P_mixEOS(959.29,3.247,0.5 )="<<P_mixEOS(959.293392521706,3.247062234928264, Xr,  P_guesser(959.293392521706,3.247062234928264), 0.5, 1.0e-3 );
-
-	//	cin.ignore();
 		return  Rho_MixEOS( T,  P,  Xr);
     }
   if(!gsl_finite(P) || !gsl_finite(T)) // Check if P, T, or rho_guess is infinite or nan due to some error.  Stop code to avoid further error.
@@ -1257,38 +1247,11 @@ double EOS::Press(double rho, double T)
     P = rho*kb*T/(mmol*mp);
     return P;
   case 5:
-   cout<<"im here!";
-		//ofstream output_file3;
-		//output_file3.open("outputTPrho.txt");
-	 //@@@@
-		 // if (rho<0){
-			// cout << "P= " << P <<endl;
-			// cout << "rho= " << rho <<endl;
-			// cout << "T= " << T <<endl;
-			// cout << "oldP= " << oldP <<endl;
-			// cout << "oldrho= " << oldrho <<endl;
-			
-		// }
-		// P= P_mixEOS(1200,0.899545, 0.5,  962.259 , 0.001, 1.0e-3 );
-		// cout << "out with P= " << P <<endl;
-		cout<<"P_mixEOS(366.5,0.6,0.5 );"<<P_mixEOS(366.5225269015655,0.6081395638028684, Xr,  P_guesser( 366.522526901565,0.6081395638028684), 0.001, 1.0e-3 );
-		cout<<"P_mixEOS(366.5,0.6,0.5 );"<<P_mixEOS(366.5225269015655,0.6081395638028684, Xr,  P_guesser( 366.522526901565,0.6081395638028684), 0.001, 1.0e-3 );		
-		cin.ignore();
-		
+	
 	 P= P_mixEOS(T,rho, Xr,  P_guesser( T,rho), 0.001, 1.0e-3 );
-	 
-	 
-	 
-	// P= P_mixEOS(1200,715116, 0.5,  962.259 , 0.001, 1.0e-3 );
-	// cout << "out with P= " << P <<endl;
-	 //cout<<"Rho_MixEOS(1200, 668.503, 0.5)"<<Rho_MixEOS(1200, 668.503, 0.5);
-	//cin.ignore();
+
 	#if DEBUG_LEVEL == 1
-		
-		//cout << "Rho_MixEOS(500, P, 0.5); ="<< Rho_MixEOS(500,  P, 0.5)<<endl;
-		//cin.ignore(); 
-	//	fstream outputFile666("output.txt", std::ios::app)
-	//	outputFile666 << "T= "<<T<<" | P= "<<P<< " | rho= "<<rho <<endl;
+
 		oldrho=rho;
 		oldP=P;
 		
@@ -2212,7 +2175,6 @@ double S_T(double V, void *params)
   EOS* Phase = p->Phase;
   double rho = Phase->density(V);
   double T = p->x[0];
-
   return Phase->entropy(rho, T);
 }
 
@@ -2230,14 +2192,34 @@ double S_V(double T, void *params)
 double EOS::pSpV_T(double V, double T)
 // partial S (entropy) partial V at constant T
 {
+  
   gsl_function F;
   double result, abserr;
   struct EOS_params params = {{T}, this};
+  double res;
+  double dV=0.001*V;
+ 
   
   F.function = &S_T;
   F.params = &params;
-  gsl_deriv_central(&F, V, 1E-4, &result, &abserr);
-  return result;
+  gsl_deriv_central(&F, V, 1e-1, &result, &abserr);
+  cout<<"T="<<T<<endl;
+  cout<<"V="<<V<<endl;
+  cout<<"abserr="<<abserr<<endl;
+  cout<<"result="<<result<<endl;
+  cout<<"S_T(V,&params)="<<S_T(V,&params)<<endl;
+
+  cin.ignore();
+
+  res=(S_T(V+dV,&params)-S_T(V,&params))/dV;
+  // cout<<endl;
+  // cout<<"res="<<res<<endl;
+  // cout<<"result="<<res<<endl;
+  // cout<<S_T(V,&params)<<endl;
+  // cin.ignore();
+  return res;
+// return result;
+
 }
 
 double EOS::pSpT_V(double V, double T)
@@ -2245,21 +2227,49 @@ double EOS::pSpT_V(double V, double T)
 {
   gsl_function F;
   double result, abserr;
+  double res,dT=T* 0.001;
   struct EOS_params params = {{V}, this};
   
   F.function = &S_V;
   F.params = &params;
-  gsl_deriv_central(&F, T, 1E-2, &result, &abserr);
-  return result;
+  gsl_deriv_central(&F, T, T* 0.001, &result, &abserr);
+  // int status;
+  // status = gsl_deriv_central(&F, V, 0.5*dT, &result, &abserr);
+  // cout<<"Error code: "<<gsl_strerror (status)<<' '<<status<<endl;
+
+  // cout<<"T="<<T<<endl;
+  // cout<<"dT="<<dT<<endl;
+  // cout<<"S_V(T,&params)="<<S_V(T,&params)<<endl;
+
+   res=(S_V(T+dT,&params)-S_V(T,&params))/dT;
+  // cout<<"result="<<result<<endl;
+  // cout<<"res="<<res<<endl;
+  //   cin.ignore();
+ // return result;
+  return res;
 }
 
 
 double EOS::dTdV_S(double V, double P, double T)
   // adiabatic temperature gradient in K mol/cm^3, take volume in cm^3 / mol, P in GPa
 {
+ //cout<<"eqntype="<<eqntype<<endl;
+  // if (eqntype == 5)	{
+  //   cout<<"P="<<P<<endl;
+  //    cout<<"T="<<T<<endl;
+  //    cout<<"V="<<V<<endl;
+  //    cout<<"thermal_type="<<thermal_type<<endl;
+  //    cout<<"pSpV_T(V,T)="<<pSpV_T(V,T)<<endl;
+  //    cout<<"pSpT_V(V,T)="<<pSpT_V(V,T)<<endl;
+  //    cin.ignore();
+
+  //  }   
   if (thermal_type == 1)	// has external entropy
     // dT/dV_S = - (dS/dV_T) / (dS/dT_V)
   {
+    if (pSpT_V(V,T)==0){
+       return 0;
+      }
     return - pSpV_T(V,T) / pSpT_V(V,T);
   }
   
@@ -2283,15 +2293,16 @@ double EOS::dTdV_S(double V, double P, double T)
     // cp to GPa cm^3 g^-1 K^-1
     return (a*T*K0)/(mmol*(sq(a)*T*K0*V/mmol-1E-3*cp(T)));
   }
-  
+
   return -gamma(V,T)*T/V;
+
 }
 
 double P_T(double rho, void *params)
 // pressure at constant T in GPa, density in g/cm^3
 {
 	  if (rho<=0)  {
-		cout<< "in P_T, rho<0"<<endl;
+		cout<< "in P_T, rho<0. Emergency stop"<<endl;
 		cin.ignore(); 
   }
   struct EOS_params *p = (struct EOS_params *) params;
@@ -2311,7 +2322,7 @@ double P_rho(double T, void *params)
   double rho = p->x[0];
   if (rho<=0)
   {
-		cout<< "in P_rho, rho<0"<<endl;
+		cout<< "in P_rho, rho<0. Emerency stop"<<endl;
 		cin.ignore(); 
   }
   return Phase->Press(rho, T);
@@ -2326,7 +2337,7 @@ double EOS::pPprho_T(double rho, double T)
   
   F.function = &P_T;
   F.params = &params;
-  gsl_deriv_central(&F, rho, 1E-4, &result, &abserr);
+  gsl_deriv_central(&F, rho, 0.001*rho, &result, &abserr);
   return result;
 }
 
@@ -2348,6 +2359,7 @@ double EOS::pPpT_rho(double rho, double T)
 double EOS::dTdm(double m, double r, double rho, double P, double T)
   // adiabatic temperature gradient in K/g, P in cgs
 {
+ 
   if (eqntype == 6)		// ideal gas
   {
     if (!gsl_finite(mmol))
@@ -2379,12 +2391,25 @@ double EOS::dTdm(double m, double r, double rho, double P, double T)
       cout<<"Warning: At the center of of the planet when conducting the first step ODE integration, the material density is "<<m*3./4./pi<<"g/cm^3, which seems to be too high."<<endl;
     return 0;
   }
+
+  // if (eqntype==5){
+  //   cout <<"dTdV="<<dTdV<<endl;
+  //   cout <<"rho="<<rho<<endl;   
+  //   cout <<"V="<<V<<endl; 
+  //   cout <<"P="<<P<<endl; 
+  //   cout <<"T="<<T<<endl;
+  //   cout <<"pPprho_T(rho,T)="<<pPprho_T(rho,T) <<endl;    
+  //   cout<<"pPpT_rho(rho,T)=" <<pPpT_rho(rho,T) <<endl;  
+  //   cout<<"return value="<<1E-10*dTdV*G*m/(4*pi*pow(r,4)) / (rho/V*pPprho_T(rho,T) - dTdV*pPpT_rho(rho,T))<<endl;
+  //   cin.ignore();      
+  // }
   return 1E-10*dTdV*G*m/(4*pi*pow(r,4)) / (rho/V*pPprho_T(rho,T) - dTdV*pPpT_rho(rho,T));
 }
 
 double EOS::dTdP_S(double P, double T, double &rho_guess)
 // partial T partial P along isentrope in K / GPa, given pressure in GPa
 {
+ 
   if (eqntype == 6)		// ideal gas
   {
     if (!gsl_finite(mmol))
@@ -2397,6 +2422,7 @@ double EOS::dTdP_S(double P, double T, double &rho_guess)
   rho_guess = density(P*1E10, T, rho_guess);
   double V = volume(rho_guess);
   double dTdV = dTdV_S(V, P, T);
+
 
   return -V*dTdV/(rho_guess*pPprho_T(rho_guess,T));
 }
