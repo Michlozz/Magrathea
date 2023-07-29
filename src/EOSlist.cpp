@@ -485,7 +485,7 @@ double dTdP_QEOS(double P, double T)
 double S_Mix(double rho, double T)
 {
 double Xr=0.5; //mass function of rock
-double  n=3.0;
+double  n=3.0; //atoms per cell
 //double 
 // double tmp1=S_QEOS(rho, T);
 // double tmp2=S_AQUA(rho, T);
@@ -496,7 +496,20 @@ double  n=3.0;
 // cout<<"S_QEOS="<<tmp1<<endl;
 // cout<<"S_AQUA(1.5 , 700)="<<S_AQUA(1.5 , 700)<<endl;
 // cout<<"S_QEOS(1.5 , 700)="<<S_QEOS(1.5 , 700)<<endl;
+	 
+// rho=4.619347029685588;	 T=540.9821151824591;
+// cout<<"S(CMB)="<<(Xr*S_QEOS(rho, T) +(1-Xr)*S_AQUA(rho, T) )/(n*R)<<endl;
+	 
+// rho=2.610354345766909	;	 T=540.9869699918593;
+ 
+// cout<<"S(AMB)="<<(Xr*S_QEOS(rho, T) +(1-Xr)*S_AQUA(rho, T) )/(n*R)<<endl;
 
+if (rho>7.94) {
+  cout<<"im in S_mix"<<endl;
+    cout<<"T="<<T<<endl;
+    cout<<"rho="<<rho<<endl;
+    cin.ignore();
+ }
   return (Xr*S_QEOS(rho, T) +(1-Xr)*S_AQUA(rho, T) )/(n*R);
 
 }
