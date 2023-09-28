@@ -85,8 +85,13 @@ int derivs_m2(double x, const double y[], double dydx[], void * params)
   dydx[1] = G * (Mtot - x) / (4 * pi * pow(y[0], 4)); // dP/d(Mtot-m)= G m / (4 pi r^4)
   if (thermal == 0 || thermal == 4)
     dydx[2] = 0;
-  else if (thermal ==2)
+  else if (thermal ==2){
     dydx[2] = Phase->dTdP(y[1], y[2])*dydx[1];
+    // double tmp = Phase->dTdP(y[1], y[2]);
+    // cout<<"dTdP(y[1], y[2])="<<tmp<<endl;
+    // cout<<"dydx[2]="<<dydx[2]<<endl;
+    // cin.ignore();
+    }
   else{
     dydx[2] = -Phase->dTdm(Mtot-x, y[0], rho, y[1], y[2]);
       }
@@ -98,9 +103,13 @@ int derivs_m2(double x, const double y[], double dydx[], void * params)
     {
       cout <<"x="<<x<<endl;
       cout<<"y[0]="<<y[0]<<endl;
+      cout<<"y[1]="<<y[1]<<endl;
+      cout<<"y[2]="<<y[2]<<endl;           
       cout<<"dydx[0]="<<dydx[0]<<endl;
       cout<<"dydx[1]="<<dydx[1]<<endl;
-      cout<<"dydx[2]="<<dydx[2]<<endl;   
+      cout<<"dydx[2]="<<dydx[2]<<endl; 
+      cout<<"dTdP(y[1], y[2])="<<dydx[2]/dydx[1]<<endl;
+
       cout<<"thermal="<<thermal<<endl;   
        cin.ignore();      
       cout<<"Warning: Derivative not finite. Can't find density for "<<Phase->getEOS()<<" when performing outside-in integral against m at location: r="<<y[0]<<"cm, m="<<(Mtot-x)/ME<<"MEarth, P="<<y[1]/1E10<<"GPa, T="<<y[2]<<"K, Component masses ";

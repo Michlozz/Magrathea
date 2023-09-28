@@ -7,10 +7,55 @@ extern EOS *Fe_liquid, *Fe_liquid2, *Fe_fcc, *Fe_bcc, *Fe_hcp, *Fe_hcp2, *Fe_Sea
 
 double dTdP_Si_Dummy (double P, double T);
 // A temperature gradient that equals to the melting curve. Guarantee the temperature won't drop below the melting curve. 
-double dTdP_QEOS(double P, double T);
-double S_Mix(double rho, double T);
-double S_AQUA(double rho, double T);
-double S_QEOS(double rho, double T);
+double dTdP_mix(double P, double T);
+//double S_Mix(double rho, double T);
+//double S_AQUA(double rho, double T);
+//double S_QEOS(double rho, double T);
+//void print_S(double P, double T, double S, double grad); 
 
+struct Ps {
+    double values[21];// Polynomial coefficients.
+
+    //in a form of 
+    //f(x,y)=p00 + p10.*x + p01.*y + p20.*x.^2 + p11.*x.*y + p02.*y.^2 + p30.*x.^3 + p21.*x.^2.*y  ... 
+     // + p12.*x.*y.^2 + p03.*y.^3 + p40.*x.^4 + p31.*x.^3.*y + p22.*x.^2.*y.^2 ...
+     //+ p13.*x.*y.^3 + p04.*y.^4 + p50.*x.^5 + p41.*x.^4.*y + p32.*x.^3.*y.^2 ...
+     //+ p23.*x.^2.*y.^3 + p14.*x.*y.^4 + p05.*y.^5;
+
+    // Overload the * operator to multiply a Ps by a scalar (double)
+    Ps operator*(double scalar) const {
+        Ps result;
+        for (int i = 0; i < 21; ++i) {
+            result.values[i] = values[i] * scalar;
+        }
+        return result;
+    }
+
+    // Overload the - operator to subtract two Ps
+    Ps operator-(const Ps& other) const {
+        Ps result;
+        for (int i = 0; i < 21; ++i) {
+            result.values[i] = values[i] - other.values[i];
+        }
+        return result;
+    }
+     Ps operator+(const Ps& other) const {
+        Ps result;
+        for (int i = 0; i < 21; ++i) {
+            result.values[i] = values[i] + other.values[i];
+        }
+        return result;
+    }  
+     void print() const {
+        for (int i = 0; i < 21; ++i) {
+            cout << "values[" << i << "] = " << values[i] << " ";
+        }
+        cout << endl;
+    } 
+};
+
+
+Ps FindPsAqua(double P, double T);
+Ps FindPsRock(double Tlin, double Plin);
 
 #endif

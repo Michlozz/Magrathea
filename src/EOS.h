@@ -153,6 +153,7 @@ private:
 For RTpress style of EOS, also need a _b array. They are fitted polynomial parameters of the thermal coefficients b(V) in erg/mol.  Convert eV/atom to erg/mol need to multiply eV_erg*n*NA. For example, for MgSiO3, 0.9821 eV/atom = 4.824E12 *0.9821 erg/mol = 4.738E12 erg/mol.*/
 };
 
+
 double P_EOS(double rho, void *params);
 double dP_EOS(double rho, void *params);
 void PdP_EOS(double rho, void *params, double *P, double *dP);

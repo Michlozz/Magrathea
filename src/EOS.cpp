@@ -1,6 +1,6 @@
 #include "EOS.h"
 #define DEBUG_LEVEL 0
-double Xr=0.5;
+
 EOS::EOS():phasetype(""),eqntype(0), V0(numeric_limits<double>::quiet_NaN()), K0(numeric_limits<double>::quiet_NaN()), K0p(numeric_limits<double>::quiet_NaN()), K0pp(numeric_limits<double>::quiet_NaN()), mmol(numeric_limits<double>::quiet_NaN()), P0(0), Theta0(numeric_limits<double>::quiet_NaN()), gamma0(numeric_limits<double>::quiet_NaN()), beta(numeric_limits<double>::quiet_NaN()), gammainf(numeric_limits<double>::quiet_NaN()), gamma0p(numeric_limits<double>::quiet_NaN()), e0(numeric_limits<double>::quiet_NaN()), g(numeric_limits<double>::quiet_NaN()), T0(300), alpha0(numeric_limits<double>::quiet_NaN()), alpha1(0), xi(0), cp_a(numeric_limits<double>::quiet_NaN()), cp_b(0), cp_c(0), at1(numeric_limits<double>::quiet_NaN()), at2(numeric_limits<double>::quiet_NaN()), at3(numeric_limits<double>::quiet_NaN()), at4(numeric_limits<double>::quiet_NaN()), ap1(numeric_limits<double>::quiet_NaN()), ap2(numeric_limits<double>::quiet_NaN()), ap3(numeric_limits<double>::quiet_NaN()), ap4(numeric_limits<double>::quiet_NaN()), n(-1), Z(-1), Debye_approx(false), thermal_type(0), rhotable(NULL), Ptable(NULL), bn(0), acc(NULL), spline(NULL), nline(0)
 {
   density_extern=NULL;
@@ -1350,18 +1350,18 @@ double P_guesser(double T, double rho){
 }
 
 
-double  P_mixEOS(double T, double rho0, double Xr, double Pguess , double epsilon, double DeltaRho) {
+double  P_mixEOS(double T, double rho0, double X, double Pguess , double epsilon, double DeltaRho) {
 	//input in k, micorobar
-	if ( (Xr>1)||(T<0)||(rho0<0)){
+	if ( (X>1)||(T<0)||(rho0<0)){
 		cout <<"Error in input of P_mixEOS ! returning default;P="<<Pguess <<endl;
-		cout <<"T= "<<T <<" rho= "<<rho0<< " Xr= "<<Xr <<endl;
+		cout <<"T= "<<T <<" rho= "<<rho0<< " Xr= "<<X <<endl;
 		//cin.ignore();
 		return Pguess;
 	}
 
     double p =Pguess;
 	//double POld= Pguess;
-    double rho = Rho_MixEOS(T, p, Xr);
+    double rho = Rho_MixEOS(T, p, X);
 	double toll = rho0*DeltaRho; //tollarance 
     double alpha = 0.1; // step size	
 	int errorflag=0;
@@ -1384,18 +1384,18 @@ double  P_mixEOS(double T, double rho0, double Xr, double Pguess , double epsilo
 
 	for (int i = 0; i < 1e4; i++){
 		
-        double drho_dp = (Rho_MixEOS(T, p+epsilon, Xr) - rho) / epsilon; // gradient approximation
+        double drho_dp = (Rho_MixEOS(T, p+epsilon, X) - rho) / epsilon; // gradient approximation
 		//cout << "T= "<<T<< " p= "<< p << " Xr=" << Xr<< " Rho_MixEOS(T, p, Xr)="<< Rho_MixEOS(T, p, Xr) << " stepsize= "<<alpha * (rho - rho0) / drho_dp<<"\n";
 		//cin.ignore();
 		double stepsize = alpha * (rho - rho0) / drho_dp;	
 		if (abs(drho_dp)<=0.0001){
 			#if DEBUG_LEVEL == 1
 			cout <<"In P_mixEOS main loop; drho_dp==0"<<endl;
-			cout<<"epsilon="<<epsilon<<" rho= "<< rho<< " p= "<<p <<" Rho_MixEOS(T, p+epsilon, Xr)= "<<Rho_MixEOS(T, p+epsilon, Xr)<<endl;
-			cout <<"function input: T= "<<T <<" rho= "<<rho0<<" Pguess ="<<Pguess  <<" Xr= "<<Xr <<endl;
+			cout<<"epsilon="<<epsilon<<" rho= "<< rho<< " p= "<<p <<" Rho_MixEOS(T, p+epsilon, Xr)= "<<Rho_MixEOS(T, p+epsilon, X)<<endl;
+			cout <<"function input: T= "<<T <<" rho= "<<rho0<<" Pguess ="<<Pguess  <<" Xr= "<<X <<endl;
 			#endif
 			epsilon=p*1e-5;
-			drho_dp = (Rho_MixEOS(T, p+epsilon, Xr) - rho) / epsilon;
+			drho_dp = (Rho_MixEOS(T, p+epsilon, X) - rho) / epsilon;
 			stepsize = alpha * (rho - rho0) / drho_dp;	
 			
 			#if DEBUG_LEVEL == 1
@@ -1411,15 +1411,15 @@ double  P_mixEOS(double T, double rho0, double Xr, double Pguess , double epsilo
         p = p -  stepsize;// update p
 		if ( (isnan(p))||(isnan(stepsize))|| (isnan(drho_dp ) ) ){
 			cout <<"Error in P_mixEOS main loop"<<endl;
-			cout<<"rho="<<rho<<" Rho_MixEOS(T, p+epsilon, Xr)=" <<Rho_MixEOS(T, p+epsilon, Xr) <<endl;
+			cout<<"rho="<<rho<<" Rho_MixEOS(T, p+epsilon, Xr)=" <<Rho_MixEOS(T, p+epsilon, X) <<endl;
 			cout <<"p= "<<p <<" stepsize= "<<stepsize<< " drho_dp= "<<drho_dp <<endl; 
 	
 			cin.ignore();
 		}
-        rho =  Rho_MixEOS(T, p, Xr);
+        rho =  Rho_MixEOS(T, p, X);
 		if (isnan(rho)){
 			cout <<"Error in P_mixEOS main loop; Rho_MixEOS gave wrong output"<<endl;
-			cout<<"rho= "<<rho<<" T = "<<T<<" p= "<<p <<" Xr= "<<Xr<<endl;
+			cout<<"rho= "<<rho<<" T = "<<T<<" p= "<<p <<" Xr= "<<X<<endl;
 			cout<<"drho_dp= "<<drho_dp<< " = alpha * (rho - rho0) / drho_dp = "<<alpha * (rho - rho0) / drho_dp<<endl<<" stepsize= "<<stepsize<<endl ;
 			
 			cin.ignore();
@@ -1449,14 +1449,14 @@ double  P_mixEOS(double T, double rho0, double Xr, double Pguess , double epsilo
 				cout<< " decreasing alpha" <<"\n";
 			#endif
 			if (errorflag>3){
-				if (rho >=min(Rho_MixEOS(T, P_pre_min, Xr), Rho_MixEOS(T, Pmin, Xr) ) && rho <= max( Rho_MixEOS(T, P_pre_min, Xr), Rho_MixEOS(T, Pmin, Xr) )){
-					printline (T,P_pre_min +(rho0-Rho_MixEOS(T, P_pre_min, Xr) ) * (P_pre_min-Pmin)/(Rho_MixEOS(T, P_pre_min, Xr)- Rho_MixEOS(T, Pmin, Xr)  ), rho );
+				if (rho >=min(Rho_MixEOS(T, P_pre_min, X), Rho_MixEOS(T, Pmin, X) ) && rho <= max( Rho_MixEOS(T, P_pre_min, X), Rho_MixEOS(T, Pmin, Xr) )){
+					printline (T,P_pre_min +(rho0-Rho_MixEOS(T, P_pre_min, X) ) * (P_pre_min-Pmin)/(Rho_MixEOS(T, P_pre_min, X)- Rho_MixEOS(T, Pmin, Xr)  ), rho );
 					#if DEBUG_LEVEL == 1					
 						cout<< " decreasing alpha, return interp" <<"\n";
-						cout << "Pmin= "<< Pmin<<" Rho_MixEOS(T, Pmin, Xr)= "<< Rho_MixEOS(T, Pmin, Xr)<<"\n";
-						cout <<" P_pre_min= " <<P_pre_min<<" Rho_MixEOS(T, P_pre_min, Xr) ="<< Rho_MixEOS(T, P_pre_min, Xr) << "\n rho0= "<<rho0<<"\n";
+						cout << "Pmin= "<< Pmin<<" Rho_MixEOS(T, Pmin, X)= "<< Rho_MixEOS(T, Pmin, X)<<"\n";
+						cout <<" P_pre_min= " <<P_pre_min<<" Rho_MixEOS(T, P_pre_min, X) ="<< Rho_MixEOS(T, P_pre_min, X) << "\n rho0= "<<rho0<<"\n";
 					#endif
-					return P_pre_min +(rho0-Rho_MixEOS(T, P_pre_min, Xr) ) * (P_pre_min-Pmin)/(Rho_MixEOS(T, P_pre_min, Xr)- Rho_MixEOS(T, Pmin, Xr) );
+					return P_pre_min +(rho0-Rho_MixEOS(T, P_pre_min, X) ) * (P_pre_min-Pmin)/(Rho_MixEOS(T, P_pre_min, X)- Rho_MixEOS(T, Pmin, Xr) );
 				}else{
 					#if DEBUG_LEVEL == 1					
 						cout<< " decreasing alpha, return Pmin" <<"\n";
@@ -1472,12 +1472,12 @@ double  P_mixEOS(double T, double rho0, double Xr, double Pguess , double epsilo
 				cout<< " step too small "<<"\n";
 			#endif
 
-			if (rho0 >=min(Rho_MixEOS(T, P_pre_min, Xr), Rho_MixEOS(T, Pmin, Xr) ) && rho0 <= max( Rho_MixEOS(T, P_pre_min, Xr), Rho_MixEOS(T, Pmin, Xr) )){
-				printline (T,P_pre_min +(rho0-Rho_MixEOS(T, P_pre_min, Xr) ) * (P_pre_min-Pmin)/(Rho_MixEOS(T, P_pre_min, Xr)- Rho_MixEOS(T, Pmin, Xr)  ), rho0 );
+			if (rho0 >=min(Rho_MixEOS(T, P_pre_min, X), Rho_MixEOS(T, Pmin, X) ) && rho0 <= max( Rho_MixEOS(T, P_pre_min, X), Rho_MixEOS(T, Pmin, X) )){
+				printline (T,P_pre_min +(rho0-Rho_MixEOS(T, P_pre_min, X) ) * (P_pre_min-Pmin)/(Rho_MixEOS(T, P_pre_min, X)- Rho_MixEOS(T, Pmin, X)  ), rho0 );
 				#if DEBUG_LEVEL == 1
 					cout << "small step. return interp"<<"\n";
 				#endif
-				return P_pre_min +(rho0-Rho_MixEOS(T, P_pre_min, Xr) ) * (P_pre_min-Pmin)/(Rho_MixEOS(T, P_pre_min, Xr)- Rho_MixEOS(T, Pmin, Xr) );
+				return P_pre_min +(rho0-Rho_MixEOS(T, P_pre_min, X) ) * (P_pre_min-Pmin)/(Rho_MixEOS(T, P_pre_min, X)- Rho_MixEOS(T, Pmin, X) );
 			}else{
 				printline (T,Pmin,  rho );
 				#if DEBUG_LEVEL == 1
@@ -1501,7 +1501,7 @@ double  P_mixEOS(double T, double rho0, double Xr, double Pguess , double epsilo
 		}
     }
 	printline (T,p,rho0);
-	cin.ignore(); 
+	//cin.ignore(); 
 				#if DEBUG_LEVEL == 1
 					cout << "finished loop. return last p"<<"\n";
 				#endif		
@@ -1511,44 +1511,62 @@ double  P_mixEOS(double T, double rho0, double Xr, double Pguess , double epsilo
 
 
 
-double Rho_MixEOS(double T, double P, double Xr) {
-	//input in micorbar
+double Rho_MixEOS(double T, double P, double X) {
+	//input in micorbar (barye )
 	// funtion that calles two rhows and finds mixed rho
 	// formula: 1/rho= Xr/rhor +Xw/rhow 
 	
 	//P=P*1e-10; //to Gpa //@1@ watch out!
-	
-	if ( (Xr>1)||(T<0)||(P<0)||(isnan(T) ||isnan(P) )){
+
+	if ( (X>1)||(T<0)||(P<0)||(isnan(T) ||isnan(P) )){
 		cout <<"Error in input of Rho_MixEOS !" <<endl;
-		cout <<"T= "<<T <<" P= "<<P<< " Xr= "<<Xr <<endl;
-		cout << "Emergency stop"<<endl;
-		cin.ignore();
+		cout <<"T= "<<T <<" P= "<<P<< " Xr= "<<X <<endl;
+    if (T<0){
+      cout<<"Warning in Rho_MixEOS, T is too low";
+      cout<<"setting T=100"<<endl;
+      T=100;
+      }
+		//cout << "Emergency stop"<<endl;
+		//cin.ignore();
 		
 		
 	}
 	if ((P>4e15)||(T>100000)){
-		cout <<"Warning: High input for Rho_MixEOS. Using extrapolation!"<<endl;
-		cout <<"T= "<<T <<" P= "<<P<< " Xr= "<<Xr <<endl;
+		cout <<"Warning: High input for Rho_MixEOS."<<endl;
+		cout <<"T= "<<T <<" P= "<<P<< " Xr= "<<X <<endl;
+    if (T>100000){
+      cout<<"Setting T to max, 1e5K"<<endl;
+      T=100000;
+    }else{
+      cout<<"Setting P to max, 4e15 dyne/cc"<<endl;
+      T=4e15;
+    }
+    cout<<"with new set values:"<<endl;
 		cout <<"RhoW(T, P); ="<<Rho_AQUAEOS(T, P) <<endl;
 		cout <<"RhoR(T, P); ="<<Rho_QEOS(T, P) <<endl;
+    cout<<"continure run"<<endl;
 		
 	}
 	    double	RhoW, RhoR,Xw;
-		Xw=1-Xr;
+		Xw=1-X;
 		RhoW=Rho_AQUAEOS(T, P); 
 		RhoR=Rho_QEOS(T, P); 
+    // cout<<"Test mode!!"<<endl;
+    // RhoW=Rho_AQUAEOS(711.486, 6.76715e+12); 
+
+    //cin.ignore();
 	//	cout <<"RhoR= "<<RhoR<<"RhoW= "<<RhoW<<endl;
 	//	cout <<"(Xr/RhoR + Xw/RhoW)= "<<(Xr/RhoR + Xw/RhoW)<<endl;
 	if ( (RhoR<=0)||(RhoW<=0)||(isnan(RhoW) ||isnan(RhoR) )){
 		cout <<"Error in output of Rho_MixEOS ! input:" <<endl;
-		cout <<"T= "<<T <<" P= "<<P<< " Xr= "<<Xr << " output:"<<endl;
+		cout <<"T= "<<T <<" P= "<<P<< " Xr= "<<X << " output:"<<endl;
 		cout <<"RhoR= "<<RhoR<<"RhoW= "<<RhoW<<endl;
 
 		cout << "Emergency stop"<<endl;
 		cin.ignore();
 		
 	}		
-		return 1.0 / (Xr/RhoR + Xw/RhoW);	
+		return 1.0 / (X/RhoR + Xw/RhoW);	
 }
 
 double Rho_AQUAEOS(double Tlin, double Plin) {
@@ -1562,8 +1580,8 @@ double Rho_AQUAEOS(double Tlin, double Plin) {
 				
 	}
 	if ( Tlin<100){
-		cout<< "Warning in input of Rho_AQUAEOS"<<endl;
-		cout <<"T= "<<Tlin<<" , outside the EOS. Using T=100"<<endl;
+	//	cout<< "Warning in input of Rho_AQUAEOS"<<endl;
+	//	cout <<"T= "<<Tlin<<" , outside the EOS. Using T=100"<<endl;
 		Tlin=100;
 	}
 	
@@ -1586,7 +1604,7 @@ double Rho_AQUAEOS(double Tlin, double Plin) {
 	double x, y;
 	x=T;
 	y=P;
-	
+
     bool aboveLine1 = (P > -26.471 * pow(T, 2) + 150.19 * T - 206.1);
     bool aboveLine2 = (P > -1.0682 * pow(T, 4) + 17.137 * pow(T, 3) - 102.01 * pow(T, 2) + 267.83 * T - 252.75);
     bool aboveLineAB = (P > -13.285 * pow(T, 3) + 102.28 * pow(T, 2) - 252.5 * T + 204.01);
@@ -1754,13 +1772,30 @@ if (T > 3.9 && P < -0.3858 * pow(T, 2) + 4.512 * T - 2.5347) { //B7
 
 if (P > 11.83) //C1
 {
-    p00 = 4.301; p10 = -0.009416; p01 = 0.3692; p20 = -0.006416; p11 = 0.0113;
-    p02 = 0.02318; p30 = -0.002028; p21 = 0.008771; p12 = -0.005377; p03 = -0.001204;
-    p40 = -0.0005432; p31 = 0.00269; p22 = -0.004188; p13 = 0.0006328; p04 = -0.0007244;
-    p50 = -0.000137; p41 = -4.564e-05; p32 = -0.001235; p23 = 0.0007373; p14 = 0.0002877;
-    p05 = 4.814e-05;
-    x = (x - 3.5) / 0.8689;
-    y = (y - 13.22) / 0.8043;
+    // p00 = 4.301; p10 = -0.009416; p01 = 0.3692; p20 = -0.006416; p11 = 0.0113;
+    // p02 = 0.02318; p30 = -0.002028; p21 = 0.008771; p12 = -0.005377; p03 = -0.001204;
+    // p40 = -0.0005432; p31 = 0.00269; p22 = -0.004188; p13 = 0.0006328; p04 = -0.0007244;
+    // p50 = -0.000137; p41 = -4.564e-05; p32 = -0.001235; p23 = 0.0007373; p14 = 0.0002877;
+    // p05 = 4.814e-05;
+    // x = (x - 3.5) / 0.8689;
+    // y = (y - 13.22) / 0.8043;
+    p00 = 4.302 ;
+p10 = -0.007122 ;
+p01 = 0.3678 ;
+p20 = -0.007813 ;
+p11 = 0.0113 ;
+p02 = 0.02318 ;
+p30 = -0.00372 ;
+p21 = 0.009981 ;
+p12 = -0.00686 ;
+p03 = -0.0003065 ;
+p31 = 0.00269 ;
+p22 = -0.004188 ;
+p13 = 0.0006328 ;
+p04 = -0.0007244 ;
+           x=(x- 3.5)/0.8689;
+           y=(y- 13.22)/0.8043;    
+
 }
 else if (P <= 11.83 && P > (9.003 * pow(T, 4) - 81.988 * pow(T, 3) + 279.25 * pow(T, 2) - 420.9 * T + 245.64) && T < 2.81) //C2
 {
@@ -1775,20 +1810,40 @@ else if (P <= 11.83 && P > (9.003 * pow(T, 4) - 81.988 * pow(T, 3) + 279.25 * po
 
 if ((P<=11.83)&&(T<=3.35)&&(P> 5.5834*pow(T,4) - 68.396*pow(T,3) + 310.69*pow(T,2) - 618.37*T + 463.86)&&(T>=2.81)) //C3
 {
-	p00 = 3.535;
-	p10 = -0.002158;
-	p01 = 0.09431;
-	p20 = -0.0009023;
-	p11 = 0.002154;
-	p02 = 0.00352;
-	p21 = 2.74e-05;
-	p12 = -0.001015;
-	p03 = 0.008594;
-	p22 = 0.0003741;
-	p13 = -0.0002965;
-	p04 = 0.002108;
-	x = (x - 3.051) / 0.1538; // 3.051 and std 0.1538
-	y = (y - 11.18) / 0.399; //11.18 and std 0.399
+  p00 = 3.531 ;
+p10 = -0.002076 ;
+p01 = 0.09132 ;
+p20 = -0.0007087 ;
+p11 = 0.002505 ;
+p02 = 0.003918 ;
+p30 = -0.0001819 ;
+p21 = 0.0007011 ;
+p12 = -0.000845 ;
+p03 = 0.008722 ;
+p31 = -9.383e-05 ;
+p22 = 0.0003032 ;
+p13 = -0.0005013 ;
+p04 = 0.001445 ;
+p32 = 0.0001737 ;
+p23 = -0.0004977 ;
+p14 = -5.931e-05 ;
+p05 = -0.0001746 ;
+           x=(x- 3.05)/0.1538;
+           y=(y- 11.17)/0.3918;
+	// p00 = 3.535;
+	// p10 = -0.002158;
+	// p01 = 0.09431;
+	// p20 = -0.0009023;
+	// p11 = 0.002154;
+	// p02 = 0.00352;
+	// p21 = 2.74e-05;
+	// p12 = -0.001015;
+	// p03 = 0.008594;
+	// p22 = 0.0003741;
+	// p13 = -0.0002965;
+	// p04 = 0.002108;
+	// x = (x - 3.051) / 0.1538; // 3.051 and std 0.1538
+	// y = (y - 11.18) / 0.399; //11.18 and std 0.399
 }
 if ((P<=11.83)&&(P>10.45)&&(T>3.75)) //C4
 {
@@ -2034,8 +2089,8 @@ if ((P>8.17)&&(P<=9.003*pow(T,4) - 81.988*pow(T,3) + 279.25*pow(T,2) - 420.9*T+ 
          + p23*pow(x,2)*pow(y,3) + p14*x*pow(y,4) + p05*pow(y,5);
 
 
-// cout << "p00: " << p00 << endl;
-// cout << "p10: " << p10 << endl;
+ //cout << "p00: " << p00 << endl;
+ //cout << "p10: " << p10 << endl;
 // cout << "p01: " << p01 << endl;
 // cout << "p20: " << p20 << endl;
 // cout << "p11: " << p11 << endl;
@@ -2092,16 +2147,38 @@ double Rho_QEOS(double T, double P) {
  // cin.ignore(); // Ignore any input from the user	
   if (P >= -4.8 && (P > -0.6836 * pow(T, 4) - 5.7785 * pow(T, 3) - 17.732 * pow(T, 2) - 21.736 * T - 11.52)) {
         if (T <= -2.6) { //A1
-            p00 = 2.233;
-            p10 = -0.0359;
-            p01 = 0.5274;
-            p20 = -0.009718;
-            p11 = 0.01016;
-            p02 = 0.007094;
-            p30 = -0.0008563;
-            p21 = 0.00142;
-            p12 = -0.0008899;
-            p03 = -0.003685;
+          p00 = 2.171 ;
+          p10 = -0.1238 ;
+          p01 = 0.5795 ;
+          p20 = -0.05115 ;
+          p11 = 0.04867 ;
+          p02 = 0.008631 ;
+          p30 = -0.009285 ;
+          p21 = 0.01414 ;
+          p12 = -0.008067 ;
+          p03 = 0.001404 ;
+          p40 = -0.0006202 ;
+          p31 = 0.001315 ;
+          p22 = -0.001136 ;
+          p13 = 0.0004605 ;
+          p04 = 0.0003091 ;
+            if (P<=-4.7570 ) {//Patch A1-C
+              p00 = 0.5059 ;
+              p10 = -0.0145 ;
+              p01 = 0.00935 ;
+              p20 = -0.001841 ;
+              p11 = 0.000566 ;
+              p02 =0;
+              p30 =0;
+              p21 =0;
+              p12 =0;
+              p03 =0;
+              p40 =0;
+              p31 =0;
+              p22 =0;
+              p13 =0;
+              p04 =0;
+            }
         }
         else { //A2
             p00 = 1.609;
@@ -2129,11 +2206,17 @@ double Rho_QEOS(double T, double P) {
             p11 = -0.0125;
         }
         else { //reg C
-            p00 = 0.5057;
-            p10 = -0.01474;
-            p01 = 0.009411;
-            p20 = -0.001885;
-            p11 = 0.0005793;
+            // p00 = 0.5057;
+            // p10 = -0.01474;
+            // p01 = 0.009411;
+            // p20 = -0.001885;
+            // p11 = 0.0005793;
+              p00 = 0.5059 ;
+              p10 = -0.0145 ;
+              p01 = 0.00935 ;
+              p20 = -0.001841 ;
+              p11 = 0.000566 ;
+
 
             if (P - (-0.6836 * pow(T, 4) - 5.7785 * pow(T, 3) - 17.732 * pow(T, 2) - 21.736 * T - 11.52) < 0.0666) { //small patch - jump to region B
                 p00 = 1.253;
@@ -2203,13 +2286,13 @@ double EOS::pSpV_T(double V, double T)
   F.function = &S_T;
   F.params = &params;
   gsl_deriv_central(&F, V, 1e-1, &result, &abserr);
-  cout<<"T="<<T<<endl;
-  cout<<"V="<<V<<endl;
-  cout<<"abserr="<<abserr<<endl;
-  cout<<"result="<<result<<endl;
-  cout<<"S_T(V,&params)="<<S_T(V,&params)<<endl;
+  // cout<<"T="<<T<<endl;
+  // cout<<"V="<<V<<endl;
+  // cout<<"abserr="<<abserr<<endl;
+  // cout<<"result="<<result<<endl;
+  // cout<<"S_T(V,&params)="<<S_T(V,&params)<<endl;
 
-  cin.ignore();
+  // cin.ignore();
 
   res=(S_T(V+dV,&params)-S_T(V,&params))/dV;
   // cout<<endl;
@@ -2338,6 +2421,12 @@ double EOS::pPprho_T(double rho, double T)
   F.function = &P_T;
   F.params = &params;
   gsl_deriv_central(&F, rho, 0.001*rho, &result, &abserr);
+  // cout<<"in pPprho_T:"<<endl;
+  // cout<<"T="<<T<<endl;
+  // cout<<"rho="<<rho<<endl;
+  // cout<<"abserr="<<abserr<<endl;
+  // cout<<"result="<<result<<endl;
+  // cin.ignore();
   return result;
 }
 
@@ -2350,7 +2439,13 @@ double EOS::pPpT_rho(double rho, double T)
   
   F.function = &P_rho;
   F.params = &params;
-  gsl_deriv_central(&F, T, 1E-2, &result, &abserr);
+  gsl_deriv_central(&F, T, T*0.005, &result, &abserr);
+  // cout<<"inpPpT_rho="<<endl;
+  // cout<<"result"<<result<<endl;
+  // cout<<"abserr="<<abserr<<endl; 
+  // cout<<"rho="<<rho<<endl; 
+  // cout<<"T="<<T<<endl;
+  // cin.ignore();
   // 1E-2 is the step size in conducting derivative. A step size too small will increase the error due to machine error. A value too large may also increase the error and may even crash the code.
   return result;
 }
@@ -2584,7 +2679,7 @@ double EOS::density(double P1, double T1, double rho, double P2, double &T2)
 
     if (!gsl_finite(rho2))
     {
-      if (verbose) // !@!@
+      if (verbose) 
 	cout<<"aa Warning: Can't find the density for "<<phasetype<<" at pressure "<<P2<<" GPa and temperature "<<T1<<" K, initial guessed density:"<<rho<<". V0, K0, K0p: "<<V0<<' '<<K0<<' '<<K0p<<". Likely no solution exist for this physical condition under the EOS used."<<endl;
       
       gsl_root_fdfsolver_free (s);

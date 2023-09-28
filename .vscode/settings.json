@@ -4,6 +4,17 @@
         "iostream": "cpp",
         "ostream": "cpp",
         "functional": "cpp",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "C_Cpp.default.cppStandard": "c++17",
+        "cmath": "cpp",
+        "istream": "cpp",
+        "vector": "cpp",
+        "array": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "utility": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp"
     }
 }

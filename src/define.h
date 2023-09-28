@@ -59,6 +59,7 @@ const double NA=6.02214E23;
 const double AAtocm3 = 0.3011;	// 1 \AA^3 equivalents to NA / (2*10^24) = 0.3011 cm^3 / mol.
 const double eV_erg = 1.60217710E-12;	// 1 eV=1.6E-12 erg
 
+extern double Xr;
 template<class T>
 inline double sq(const T &a)
 {return double(a*a);}

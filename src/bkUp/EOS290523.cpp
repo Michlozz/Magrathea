@@ -2338,7 +2338,7 @@ double EOS::pSpT_V(double V, double T)
   
   F.function = &S_V;
   F.params = &params;
-  gsl_deriv_central(&F, T, 1E-2, &result, &abserr);
+  gsl_deriv_central(&F, T, T*0.005, &result, &abserr);
   return result;
 }
 
