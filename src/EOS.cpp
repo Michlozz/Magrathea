@@ -1565,7 +1565,7 @@ double Rho_MixEOS(double T, double P, double X) {
 		cin.ignore();
 		
 	}		
-		return 1.0 / (Xr/RhoR + Xw/RhoW);	
+		return 1.0 / (X/RhoR + Xw/RhoW);	
 }
 
 double Rho_AQUAEOS(double Tlin, double Plin) {
