@@ -421,22 +421,13 @@ if ((x > 2.22) && (x <= 2.53) && (y > -0.9792 * x * x + 5.2856 * x + 3.2264)) //
 
 if ((y > -23.095 * x * x * x + 189.67 * x * x - 516.09 * x + 476) && (x > 2.53) && (x <= 2.79)) // reg 6
 {
-       p00 =        -146  ;
-       p10 =       20.49  ;
-       p01 =       35.87  ;
-       p20 =       2.594  ;
-       p11 =      -4.787  ;
-       p02 =       -2.61  ;
-       p21 =     -0.2548  ;
-       p12 =      0.2834  ;
-       p03 =     0.05288  ;
-    // p00 = -166.5;
-    // p10 = 34.82;
-    // p01 = 38.14;
-    // p11 = -6.241;
-    // p02 = -2.64;
-    // p12 = 0.2881;
-    // p03 = 0.05341;
+    p00 = -166.5;
+    p10 = 34.82;
+    p01 = 38.14;
+    p11 = -6.241;
+    p02 = -2.64;
+    p12 = 0.2881;
+    p03 = 0.05341;
 }
 
 if ((y > -2.8802 * x * x + 19.335 * x - 20.568) && (x > 2.79) && (x <= 3.35)) // reg 7
@@ -559,35 +550,16 @@ if ((x >= 3.35) && (x < 3.66) && (y < 11.61)) // reg 11
 
 if ((x >= 3.35) && (x < 3.66) && (y >= 11.61)) // reg 12
 {
-  if (y <= -0.3244 * x + 12.89) // reg12a
-{
-    p00 = -6.499;
-    p10 = -11.1;
-    p01 = 5.911;
-    p20 = -0.06589;
-    p11 = 1.027;
-    p02 = -0.417;
-}
-else // reg12b
-{
-    p00 = -2.546;
-    p10 = 1.569;
-    p01 = 1.233;
-    p20 = -0.3693;
-    p11 = 0.1339;
-    p02 = -0.07573;
-}
-
-    // p00 = 662.4;
-    // p10 = -87.13;
-    // p01 = -137.3;
-    // p20 = 2.972;
-    // p11 = 12.78;
-    // p02 = 9.498;
-    // p30 = 0.0124;
-    // p21 = -0.2839;
-    // p12 = -0.438;
-    // p03 = -0.2205;
+    p00 = 662.4;
+    p10 = -87.13;
+    p01 = -137.3;
+    p20 = 2.972;
+    p11 = 12.78;
+    p02 = 9.498;
+    p30 = 0.0124;
+    p21 = -0.2839;
+    p12 = -0.438;
+    p03 = -0.2205;
 }
 
 if ((x >= 3.66) && (x < 4.07) && (y < 9.95)) // reg 13
@@ -640,75 +612,30 @@ if ((x >= 3.66) && (x < 4.07) && (y >= 9.95)) // reg 14
 
 if ((x >= 4.07) && (y >= 11.35)) // reg 15
 {
-       p00 =      -12.35  ;
-       p10 =       11.48  ;
-       p01 =      0.6355  ;
-       p20 =      -2.207  ;
-       p11 =     -0.1901  ;
-       p02 =    -0.01354  ;
-       p30 =      0.1667  ;
-       p21 =    -0.01338  ;
-       p12 =     0.01473  ;
-       p03 =   -0.001886  ;
-    // p00 = -12.13;
-    // p10 = 11.55;
-    // p01 = 0.5555;
-    // p20 = -2.22;
-    // p11 = -0.1913;
-    // p02 = -0.006559;
-    // p30 = 0.1653;
-    // p21 = -0.01068;
-    // p12 = 0.01374;
-    // p03 = -0.001956;
+    p00 = -12.13;
+    p10 = 11.55;
+    p01 = 0.5555;
+    p20 = -2.22;
+    p11 = -0.1913;
+    p02 = -0.006559;
+    p30 = 0.1653;
+    p21 = -0.01068;
+    p12 = 0.01374;
+    p03 = -0.001956;
 }
 
-if ((x >= 4.07) && (y < 11.35) && (y >= 10.88)) // reg 16
+if ((x >= 4.07) && (y >= 11.35) && (y >= 10.88)) // reg 16
 {
-    // p00 = -462.1;
-    // p10 = -95.25;
-    // p01 = 164.9;
-    // p20 = 8.102;
-    // p11 = 11.06;
-    // p02 = -17.12;
-    // p30 = 1.116;
-    // p21 = -2.056;
-    // p12 = 0.3034;
-    // p03 = 0.4777;
-  if (x < 4.54) // reg 16a
-  {
-    p00 = 4.08;
-    p10 = 1.604;
-    p01 = 0.08586;
-    p20 = -0.1971;
-    p11 = 0.02472;
-    p02 = -0.009732;
-  }
-  else
-  {
-    if (y > 0.9937 * x + 6.3879) // reg 16b
-    {
-        p00 = 8.608;
-        p10 = -0.3321;
-        p01 = 0.06252;
-        p20 = 0.01433;
-        p11 = 0.02597;
-        p02 = -0.008931;
-    }
-    else // reg 16c
-    {
-        p00 = -45.46;
-        p10 = 56.63;
-        p01 = -16.77;
-        p20 = -1.932;
-        p11 = -9.227;
-        p02 = 4.307;
-        p30 = -2.502;
-        p21 = 3.495;
-        p12 = -1.088;
-    }
-  }
-
-
+    p00 = -462.1;
+    p10 = -95.25;
+    p01 = 164.9;
+    p20 = 8.102;
+    p11 = 11.06;
+    p02 = -17.12;
+    p30 = 1.116;
+    p21 = -2.056;
+    p12 = 0.3034;
+    p03 = 0.4777;
 }
 
 if ((x >= 4.07) && (y < 10.88))
@@ -765,15 +692,14 @@ double dTdP_mix(double P, double T){
     double gamma;
 
   //  double Xr=0.5;
-    if (y>12.5){
+    if (y>12.6){
         cout<<"warning: in dTdP_mix, pressure too high"<<endl;
         cout<<"Xr="<<Xr<<endl;
         cout<<"T="<<T<<endl;
         cout<<"P="<<P<<endl;
         cout<<"log(p)="<<y<<endl;
-        y=12.5;
-        P = pow(10, y);
-        cout<<"had to lower log(p) to 10^12.5"<<endl;
+        y=12.6;
+        cout<<"had to lower log(p) to 10^12.6"<<endl;
         cout<<"continue run,"<<endl;
     }
      if (y<8.15){
@@ -783,32 +709,10 @@ double dTdP_mix(double P, double T){
         cout<<"P="<<P<<endl;
         cout<<"log(p)="<<y<<endl;
         y=8.15;
-        P = pow(10, y);
-        cout<<"had to increase p to 10^8.15"<<endl;
+        cout<<"had to lower log(p) to 10^8.15"<<endl;
         cout<<"continue run,"<<endl;
     }   
-    if (x>5){
-        cout<<"warning: in dTdP_mix, T too high"<<endl;
-        cout<<"Xr="<<Xr<<endl;
-        cout<<"T="<<T<<endl;
-        cout<<"log(T)="<<x<<endl;
-        cout<<"P="<<P<<endl;
-        x=5;
-        T = pow(10, T);
-        cout<<"had to lower T to 10^5"<<endl;
-        cout<<"continue run,"<<endl;     
-    }
-    if (T<100){
-        cout<<"warning: in dTdP_mix, T too low"<<endl;
-        cout<<"Xr="<<Xr<<endl;
-        cout<<"T="<<T<<endl;
-        cout<<"log(T)="<<x<<endl;
-        cout<<"P="<<P<<endl;
-        T = 100;
-        x=log10(T);
-        cout<<"had to increse log(T) to 100"<<endl;
-        cout<<"continue run,"<<endl;     
-    }
+
 
     PsW = FindPsAqua(P,T);
     PsR = FindPsRock(P,T);
@@ -850,25 +754,16 @@ double dTdP_mix(double P, double T){
         5 * PsMix.values[20] * y * y * y * y; // 5 * p05 * y^4
       //dlogT/dlogP=-dsdP_T/dsdT_p; %in log
         gamma=-dsdP_T/dsdT_p;
-        if ((gamma<0.00)||(gamma>1.0)) {
+        if (gamma<0.00) {
             cout<<"Warning: in dTdP_mix"<<endl;
             cout<<"adiabatic index, -dsdP_T/dsdT_p="<<gamma<<endl;
             cout<<"T="<<T<<", log(T)="<<log10(T)<<endl;
             cout<<"P="<<P<<", log(P)="<<log10(P)<<endl;
             cout<<"Xr="<<Xr<<endl;
-           // cout<<"p00 w="<<PsW.values[0]<<endl;
-          //  cout<<"p10 w="<<PsW.values[1]<<endl;
-            //cout<<"p00 mix"<<
-           cout<<"water Ps:"<<endl;
-            PsW.print();
-           cout<<"mix Ps:"<<endl;
-            PsMix.print();
-            cin.ignore();
             cout<<"correction of adiabatic index:"<<endl;
             gamma=Xr*0.371 +(1-Xr)*0.167;
             cout<<"new -dsdP_T/dsdT_p="<<gamma<<endl;
-
-           // cout<<"continue run,"<<endl;
+            cout<<"continue run,"<<endl;
          }
 
        // dTdP=(T/P)*(-dsdP_T/dsdT_p);

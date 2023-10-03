@@ -45,13 +45,7 @@ struct Ps {
             result.values[i] = values[i] + other.values[i];
         }
         return result;
-    }  
-     void print() const {
-        for (int i = 0; i < 21; ++i) {
-            cout << "values[" << i << "] = " << values[i] << " ";
-        }
-        cout << endl;
-    } 
+    }   
 };
 
 

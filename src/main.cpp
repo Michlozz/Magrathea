@@ -3,7 +3,7 @@
 #include "EOSmodify.h"
 #include "phase.h"  
 #include "hydro.h"
-double Xr=0.5;
+double Xr=0.0;
 struct timeval start_time, end_time;
 
 const double rho_eps_rel = 1E-11;	// relative error tolerance of the density solver

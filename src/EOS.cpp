@@ -1521,7 +1521,7 @@ double Rho_MixEOS(double T, double P, double X) {
 	if ( (X>1)||(T<0)||(P<0)||(isnan(T) ||isnan(P) )){
 		cout <<"Error in input of Rho_MixEOS !" <<endl;
 		cout <<"T= "<<T <<" P= "<<P<< " Xr= "<<X <<endl;
-    if (T<0){
+    if (T<100){
       cout<<"Warning in Rho_MixEOS, T is too low";
       cout<<"setting T=100"<<endl;
       T=100;
@@ -1553,7 +1553,6 @@ double Rho_MixEOS(double T, double P, double X) {
 		RhoR=Rho_QEOS(T, P); 
     // cout<<"Test mode!!"<<endl;
     // RhoW=Rho_AQUAEOS(711.486, 6.76715e+12); 
-
     //cin.ignore();
 	//	cout <<"RhoR= "<<RhoR<<"RhoW= "<<RhoW<<endl;
 	//	cout <<"(Xr/RhoR + Xw/RhoW)= "<<(Xr/RhoR + Xw/RhoW)<<endl;
@@ -1566,7 +1565,7 @@ double Rho_MixEOS(double T, double P, double X) {
 		cin.ignore();
 		
 	}		
-		return 1.0 / (X/RhoR + Xw/RhoW);	
+		return 1.0 / (Xr/RhoR + Xw/RhoW);	
 }
 
 double Rho_AQUAEOS(double Tlin, double Plin) {

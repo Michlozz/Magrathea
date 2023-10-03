@@ -389,7 +389,6 @@ EOS* find_Si_phase(double P, double T)
 //    return Si_Pv;
 
 return Si_QEOS;
-// To myself: replace here with "return Water_AQUA"
 
   // Detailed Upper Mantle
   //if(P > 112.5 + 7E-3*T)      // Phase transfer curve from Ono & Oganov 2005, Earth Planet. Sci. Lett. 236, 914
